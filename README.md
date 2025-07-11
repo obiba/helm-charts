@@ -1,2 +1,3 @@
-# helm-charts
+# Helm Charts
+
 OBiBa Helm Charts

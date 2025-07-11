@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: opal
+  template:
+    metadata:
+      labels:
+        app: opal
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      containers:
+        - name: opal
+          image: {{ .Values.opal.image }}
+          imagePullPolicy: {{ .Values.opal.imagePullPolicy }}
+          ports:
+            - containerPort: 8080
+          env:
+{{- if .Values.postgres.enabled }}
+            - name: POSTGRESDATA_HOST
+              value: "postgres"
+            - name: POSTGRESDATA_USER
+              value: {{ .Values.postgres.username }}
+            - name: POSTGRESDATA_PASSWORD
+              value: {{ .Values.postgres.password }}
+            - name: POSTGRESDATA_DATABASE
+              value: {{ .Values.postgres.database }}
+{{- end }}
+{{- if .Values.mongo.enabled }}
+            - name: MONGO_HOST
+              value: "mongo"
+            - name: MONGODATA_DATABASE
+              value: "opal"
+            - name: MONGO_USER
+              value: {{ .Values.mongo.username }}
+            - name: MONGO_PASSWORD
+              value: {{ .Values.mongo.password }}
+{{- end }}
+            - name: ROCK_HOSTS
+              value: ""
+          volumeMounts:
+            - name: opal-storage
+              mountPath: /srv
+      volumes:
+        - name: opal-storage
+          persistentVolumeClaim:
+            claimName: opal-pvc

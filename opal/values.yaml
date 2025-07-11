@@ -1,0 +1,29 @@
+namespace: default
+
+serviceAccount:
+  name: rock-spawner-service-account
+
+useMongo: true  # db toggle
+
+mongo:
+  enabled: true
+  image: mongo:8.0
+  pvcSize: 1Gi
+  username: root
+  password: example
+
+usePostgres: false  # db toggle
+
+postgres:
+  enabled: false   # so you can switch it on per environment
+  image: postgres:15
+  pvcSize: 1Gi
+  username: postgres
+  password: example
+  database: opaldb
+
+
+opal:
+  image: obiba/opal:snapshot
+  imagePullPolicy: Always
+  pvcSize: 1Gi
