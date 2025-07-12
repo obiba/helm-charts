@@ -1,5 +1,7 @@
 namespace: default
 
+nameOverride: ""
+
 serviceAccount:
   name: rock-spawner-service-account
 
@@ -27,3 +29,14 @@ opal:
   image: obiba/opal:snapshot
   imagePullPolicy: Always
   pvcSize: 1Gi
+
+ingress:
+  enabled: true
+  className: "nginx"  # e.g. for nginx ingress controller
+  annotations: {}       # extra annotations like cert-manager etc.
+  hosts:
+    - host: opal.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []               # e.g. for cert-manager
