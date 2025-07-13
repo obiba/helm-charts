@@ -3,12 +3,12 @@ entries:
   opal:
   - apiVersion: v2
     appVersion: 5.2.0
-    created: "2025-07-13T12:54:03.942815538Z"
-    description: A Helm chart for deploying MongoDB and Opal with RBAC
-    digest: 1264c42e39bf1e938d26be2d39ba7c4904a531ebcf84e5743d340b4aa991c7bf
+    created: "2025-07-13T13:04:37.850296145Z"
+    description: A Helm chart for deploying Opal with Rock spawner and database support
+    digest: 0f39ccefe5d4d91c2c96e5c11d04e59865d3848db0deaae98558b0285a837a5a
     name: opal
     type: application
     urls:
-    - https://obiba.github.io/helm-charts/opal-0.1.0.tgz
-    version: 0.1.0
-generated: "2025-07-13T12:54:03.942346915Z"
+    - https://obiba.github.io/helm-charts/opal-0.2.0.tgz
+    version: 0.2.0
+generated: "2025-07-13T13:04:37.849859342Z"
