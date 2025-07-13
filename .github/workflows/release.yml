@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - 'opal/**'
+      - 'obiba-opal/**'
       - '.github/workflows/release.yml'
 
 jobs:
@@ -22,7 +22,7 @@ jobs:
     - name: Package chart
       run: |
         mkdir -p .cr-release-packages
-        helm package opal --destination .cr-release-packages
+        helm package obiba-opal --destination .cr-release-packages
 
     - name: Create index.yaml
       run: |

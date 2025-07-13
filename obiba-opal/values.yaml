@@ -1,6 +1,6 @@
 namespace: default
 
-nameOverride: ""
+nameOverride: "opal"
 
 # Service account for the Rock spawner
 serviceAccount:
