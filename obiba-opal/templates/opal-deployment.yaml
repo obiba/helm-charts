@@ -28,7 +28,7 @@ spec:
             - name: POSTGRESDATA_HOST
               value: {{ .Values.postgres.data.host | default "postgres" }}
             - name: POSTGRESDATA_PORT
-              value: {{ .Values.postgres.data.port | default "5432" }}
+              value: "{{ .Values.postgres.data.port }}"
             - name: POSTGRESDATA_USER
               value: {{ .Values.postgres.data.username }}
             - name: POSTGRESDATA_PASSWORD
