@@ -1,4 +1,4 @@
-{{- if .Values.postgres.enabled }}
+{{- if .Values.postgres.data.enabled }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -8,5 +8,5 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ .Values.postgres.pvcSize }}
+      storage: {{ .Values.postgres.data.pvcSize }}
 {{- end }}

@@ -11,27 +11,41 @@ mongo:
   enabled: true
   image: mongo:8.0
   pvcSize: 1Gi
+  host: mongo
+  port: "27017"
+  database: opal
   username: root
   password: example
 
 usePostgres: false  # db toggle
 
 postgres:
-  enabled: false   # so you can switch it on per environment
-  image: postgres:15
-  pvcSize: 1Gi
-  username: postgres
-  password: example
-  database: opaldb
-
+  data:
+    enabled: false   # so you can switch it on per environment
+    image: postgres:15
+    pvcSize: 1Gi
+    host: postgres
+    port: "5432"
+    username: postgres
+    password: example
+    database: opaldb
 
 opal:
   image: obiba/opal:snapshot
   imagePullPolicy: Always
   pvcSize: 1Gi
+  javaOpts: "-Xms1G -Xmx2G -XX:+UseG1GC"
+  adminPassword: password
+  resources:
+    requests:
+      memory: 1Gi
+      cpu: "1"
+    limits:
+      memory: 2Gi
+      cpu: "2"
 
 ingress:
-  enabled: true
+  enabled: false
   className: "nginx"  # e.g. for nginx ingress controller
   annotations: {}       # extra annotations like cert-manager etc.
   hosts:

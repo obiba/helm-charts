@@ -20,21 +20,29 @@ spec:
           ports:
             - containerPort: 8080
           env:
-{{- if .Values.postgres.enabled }}
+            - name: JAVA_OPTS
+              value: {{ .Values.opal.javaOpts }}
+            - name: OPAL_ADMINISTRATOR_PASSWORD
+              value: {{ .Values.opal.adminPassword }}
+{{- if or .Values.usePostgres .Values.postgres.data.enabled }}
             - name: POSTGRESDATA_HOST
-              value: "postgres"
+              value: {{ .Values.postgres.data.host | default "postgres" }}
+            - name: POSTGRESDATA_PORT
+              value: {{ .Values.postgres.data.port | default "5432" }}
             - name: POSTGRESDATA_USER
-              value: {{ .Values.postgres.username }}
+              value: {{ .Values.postgres.data.username }}
             - name: POSTGRESDATA_PASSWORD
-              value: {{ .Values.postgres.password }}
+              value: {{ .Values.postgres.data.password }}
             - name: POSTGRESDATA_DATABASE
-              value: {{ .Values.postgres.database }}
+              value: {{ .Values.postgres.data.database }}
 {{- end }}
-{{- if .Values.mongo.enabled }}
+{{- if or .Values.useMongo .Values.mongo.enabled }}
             - name: MONGO_HOST
-              value: "mongo"
+              value: {{ .Values.mongo.host | default "mongo" }}
+            - name: MONGO_PORT
+              value: "{{ .Values.mongo.port }}"
             - name: MONGODATA_DATABASE
-              value: "opal"
+              value: {{ .Values.mongo.database | default "opal" }}
             - name: MONGO_USER
               value: {{ .Values.mongo.username }}
             - name: MONGO_PASSWORD
@@ -45,6 +53,13 @@ spec:
           volumeMounts:
             - name: opal-storage
               mountPath: /srv
+          resources:
+            requests:
+              memory: {{ .Values.opal.resources.requests.memory | default "1Gi" }}
+              cpu: {{ .Values.opal.resources.requests.cpu | default "1" }}
+            limits:
+              memory: {{ .Values.opal.resources.limits.memory | default "2Gi" }}
+              cpu: {{ .Values.opal.resources.limits.cpu | default "2" }}
       volumes:
         - name: opal-storage
           persistentVolumeClaim:

@@ -1,4 +1,4 @@
-{{- if .Values.postgres.enabled }}
+{{- if .Values.postgres.data.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,16 +15,16 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: {{ .Values.postgres.image }}
+          image: {{ .Values.postgres.data.image }}
           ports:
-            - containerPort: 5432
+            - containerPort: {{ .Values.postgres.data.port | default "5432" }}
           env:
             - name: POSTGRES_USER
-              value: {{ .Values.postgres.username }}
+              value: {{ .Values.postgres.data.username }}
             - name: POSTGRES_PASSWORD
-              value: {{ .Values.postgres.password }}
+              value: {{ .Values.postgres.data.password }}
             - name: POSTGRES_DB
-              value: {{ .Values.postgres.database }}
+              value: {{ .Values.postgres.data.database }}
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgresql/data
