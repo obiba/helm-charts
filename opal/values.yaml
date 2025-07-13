@@ -2,34 +2,44 @@ namespace: default
 
 nameOverride: ""
 
+# Service account for the Rock spawner
 serviceAccount:
   name: rock-spawner-service-account
 
-useMongo: true  # db toggle
+# MongoDB setup: enable if MongoDB is externally managed
+useMongo: false
 
+# MongoDB configuration
 mongo:
+  # Enable internally managed MongoDB
   enabled: true
   image: mongo:8.0
   pvcSize: 1Gi
+  # MongoDB connection details (internal or external)
   host: mongo
   port: "27017"
   database: opal
   username: root
   password: example
 
-usePostgres: false  # db toggle
+# PostgreSQL setup: enable if PostgreSQL is externally managed
+usePostgres: false
 
+# PostgreSQL configuration
 postgres:
   data:
-    enabled: false   # so you can switch it on per environment
+    # Enable internally managed PostgreSQL
+    enabled: false
     image: postgres:15
     pvcSize: 1Gi
+    # PostgreSQL connection details (internal or external)
     host: postgres
     port: "5432"
     username: postgres
     password: example
     database: opaldb
 
+# Opal configuration
 opal:
   image: obiba/opal:snapshot
   imagePullPolicy: Always
@@ -44,13 +54,18 @@ opal:
       memory: 2Gi
       cpu: "2"
 
+# Ingress configuration
 ingress:
+  # Enable internally managed Ingress
   enabled: false
-  className: "nginx"  # e.g. for nginx ingress controller
-  annotations: {}       # extra annotations like cert-manager etc.
+  # Ingress class name, e.g., "nginx"
+  className: "nginx"
+  # Extra annotations like cert-manager etc.
+  annotations: {}
   hosts:
     - host: opal.local
       paths:
         - path: /
           pathType: Prefix
-  tls: []               # e.g. for cert-manager
+  # TLS configuration, e.g. for cert-manager
+  tls: []
