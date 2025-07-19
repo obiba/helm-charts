@@ -53,6 +53,12 @@ opal:
     limits:
       memory: 2Gi
       cpu: "2"
+  rock:
+    imagesAllowed: ""
+    default:
+      image: datashield/rock-base:latest
+      cpu: 1000m
+      memory: 1Gi
 
 # Ingress configuration
 ingress:
