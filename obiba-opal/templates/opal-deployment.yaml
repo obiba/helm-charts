@@ -54,17 +54,9 @@ spec:
             - name: ROCK_POD_IMAGES_ALLOWED
               value: {{ .Values.opal.rock.imagesAllowed }}
 {{- end }}
-{{- if .Values.opal.rock.default.image }}
-            - name: ROCK_POD_DEFAULT_IMAGE
-              value: {{ .Values.opal.rock.default.image }}
-{{- end }}
-{{- if .Values.opal.rock.default.cpu }}
-            - name: ROCK_POD_DEFAULT_CPU
-              value: {{ .Values.opal.rock.default.cpu }}
-{{- end }}
-{{- if .Values.opal.rock.default.memory }}
-            - name: ROCK_POD_DEFAULT_MEMORY
-              value: {{ .Values.opal.rock.default.memory | default "1Gi" }}
+{{- if .Values.opal.rock.specs }}
+            - name: ROCK_POD_SPECS
+              value: {{ .Values.opal.rock.specs | toJson | quote }}
 {{- end }}
           volumeMounts:
             - name: opal-storage

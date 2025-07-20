@@ -55,10 +55,22 @@ opal:
       cpu: "2"
   rock:
     imagesAllowed: ""
-    default:
-      image: datashield/rock-base:latest
-      cpu: 1000m
-      memory: 1Gi
+    specs:
+      - id: default
+        type: rock
+        enabled: true
+        container:
+            name: default
+            image: datashield/rock-base:latest
+            imagePullPolicy: IfNotPresent
+            port: 8085
+            resources:
+                requests:
+                    cpu: 1000m
+                    memory: 500Mi
+                limits:
+                    cpu: 1000m
+                    memory: 1Gi
 
 # Ingress configuration
 ingress:
