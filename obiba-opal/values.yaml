@@ -3,6 +3,7 @@ namespace: default
 nameOverride: "opal"
 
 # Service account for the Rock spawner
+# This is gives the permission to the Opal server to spawn new Rock containers
 serviceAccount:
   name: rock-spawner-service-account
 
@@ -41,33 +42,48 @@ postgres:
 
 # Opal configuration
 opal:
-  image: obiba/opal:snapshot
+  # Container image configuration
+  image: obiba/opal:latest
   imagePullPolicy: Always
+  # Opal PVC size for persistent storage of configuration files and runtime work directory 
   pvcSize: 1Gi
+  # Java options
   javaOpts: "-Xms1G -Xmx2G -XX:+UseG1GC"
+  # Opal administrator password
   adminPassword: password
   resources:
+    # Requested resources at pod start  
     requests:
       memory: 1Gi
       cpu: "1"
+    # Limits of the resources used by the pod
     limits:
       memory: 2Gi
       cpu: "2"
   rock:
+    # Comma separated list of allowed Rock images
     imagesAllowed: ""
+    # Default Rock container pods specifications
     specs:
-      - id: default
-        type: rock
+      - id: default # Identifier of the R server profile, it is required to have at least a profile with the "default" name
+        type: rock # Required
+        # When enabled, Opal will use this specification to spawn new Rock containers
         enabled: true
         container:
+            # Pod name prefix
             name: default
+            # Container image
             image: datashield/rock-base:latest
+            # Container image pull policy
             imagePullPolicy: IfNotPresent
+            # Container port (necessarily 8085 for Rock)
             port: 8085
             resources:
+                # Requested resources at pod start
                 requests:
                     cpu: 1000m
                     memory: 500Mi
+                # Limits of the resources used by the pod
                 limits:
                     cpu: 1000m
                     memory: 1Gi
