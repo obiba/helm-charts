@@ -2,11 +2,8 @@ name: Release Helm Chart
 
 on:
   push:
-    branches:
-      - master
-    paths:
-      - 'obiba-opal/**'
-      - '.github/workflows/release.yml'
+    tags:
+      - '*.*.*'
 
 jobs:
   release:
@@ -18,6 +15,18 @@ jobs:
 
     - name: Set up Helm
       uses: azure/setup-helm@v4.3.0
+
+    - name: Validate tag matches chart version
+      run: |
+        TAG_VERSION=${GITHUB_REF#refs/tags/}
+        CHART_VERSION=$(grep '^version:' obiba-opal/Chart.yaml | awk '{print $2}')
+        echo "Tag version: $TAG_VERSION"
+        echo "Chart version: $CHART_VERSION"
+        if [ "$TAG_VERSION" != "$CHART_VERSION" ]; then
+          echo "Error: Tag version ($TAG_VERSION) does not match chart version ($CHART_VERSION)"
+          exit 1
+        fi
+        echo "Version validation passed"
 
     - name: Package chart
       run: |
