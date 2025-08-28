@@ -3,7 +3,7 @@ kind: StatefulSet
 metadata:
   name: {{ include "opal.name" . }}
   labels:
-    {{ include "opal.labels" . | indent 4 }}
+    {{- include "opal.labels" . | nindent 4 }}
 spec:
   serviceName: {{ include "opal.name" . }}
   replicas: 1

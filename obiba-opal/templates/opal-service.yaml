@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: {{ include "opal.name" . }}
   labels:
-    {{ include "opal.labels" . | indent 4 }}
+    {{ include "opal.labels" . | nindent 4 }}
 spec:
   ports:
     - port: 80
