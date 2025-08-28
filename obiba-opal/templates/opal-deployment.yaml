@@ -1,8 +1,11 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ include "opal.name" . }}
+  labels:
+    {{ include "opal.labels" . | indent 4 }}
 spec:
+  serviceName: {{ include "opal.name" . }}
   replicas: 1
   selector:
     matchLabels:
@@ -68,7 +71,17 @@ spec:
             limits:
               memory: {{ .Values.opal.resources.limits.memory | default "2Gi" }}
               cpu: {{ .Values.opal.resources.limits.cpu | default "2" }}
-      volumes:
-        - name: opal-storage
-          persistentVolumeClaim:
-            claimName: opal-pvc
+  volumeClaimTemplates:
+    - metadata:
+        name: opal-storage
+        labels:
+          {{- include "opal.labels" . | nindent 10 }}
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        {{- if .Values.opal.storageClassName }}
+        storageClassName: {{ .Values.opal.storageClassName }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.opal.pvcSize | default "1Gi" }}

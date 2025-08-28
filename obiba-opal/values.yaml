@@ -47,6 +47,8 @@ opal:
   imagePullPolicy: Always
   # Opal PVC size for persistent storage of configuration files and runtime work directory 
   pvcSize: 1Gi
+  # Storage class for the PVC (leave empty for default storage class)
+  storageClassName: ""
   # Java options
   javaOpts: "-Xms1G -Xmx2G -XX:+UseG1GC"
   # Opal administrator password
@@ -81,11 +83,11 @@ opal:
             resources:
                 # Requested resources at pod start
                 requests:
-                    cpu: 1000m
+                    cpu: 2000m
                     memory: 500Mi
                 # Limits of the resources used by the pod
                 limits:
-                    cpu: 1000m
+                    cpu: 2000m
                     memory: 1Gi
 
 # Ingress configuration
