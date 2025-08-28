@@ -16,6 +16,8 @@ mongo:
   enabled: true
   image: mongo:8.0
   pvcSize: 1Gi
+  # Storage class for the PVC (leave empty for default storage class)
+  storageClassName: ""
   # MongoDB connection details (internal or external)
   host: mongo
   port: "27017"
@@ -33,6 +35,8 @@ postgres:
     enabled: false
     image: postgres:15
     pvcSize: 1Gi
+    # Storage class for the PVC (leave empty for default storage class)
+    storageClassName: ""
     # PostgreSQL connection details (internal or external)
     host: postgres
     port: "5432"

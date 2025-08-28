@@ -1,9 +1,10 @@
 {{- if .Values.mongo.enabled }}
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: mongo
 spec:
+  serviceName: mongo
   replicas: 1
   selector:
     matchLabels:
@@ -26,8 +27,18 @@ spec:
           volumeMounts:
             - name: mongo-storage
               mountPath: /data/db
-      volumes:
-        - name: mongo-storage
-          persistentVolumeClaim:
-            claimName: mongo-pvc
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-storage
+        labels:
+          app: mongo
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        {{- if .Values.mongo.storageClassName }}
+        storageClassName: {{ .Values.mongo.storageClassName }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.mongo.pvcSize | default "1Gi" }}
 {{- end }}

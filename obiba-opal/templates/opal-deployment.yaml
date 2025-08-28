@@ -27,7 +27,7 @@ spec:
               value: {{ .Values.opal.javaOpts }}
             - name: OPAL_ADMINISTRATOR_PASSWORD
               value: {{ .Values.opal.adminPassword }}
-{{- if or .Values.usePostgres .Values.postgres.data.enabled }}
+          {{- if or .Values.usePostgres .Values.postgres.data.enabled }}
             - name: POSTGRESDATA_HOST
               value: {{ .Values.postgres.data.host | default "postgres" }}
             - name: POSTGRESDATA_PORT
@@ -38,8 +38,8 @@ spec:
               value: {{ .Values.postgres.data.password }}
             - name: POSTGRESDATA_DATABASE
               value: {{ .Values.postgres.data.database }}
-{{- end }}
-{{- if or .Values.useMongo .Values.mongo.enabled }}
+          {{- end }}
+          {{- if or .Values.useMongo .Values.mongo.enabled }}
             - name: MONGO_HOST
               value: {{ .Values.mongo.host | default "mongo" }}
             - name: MONGO_PORT
@@ -50,17 +50,17 @@ spec:
               value: {{ .Values.mongo.username }}
             - name: MONGO_PASSWORD
               value: {{ .Values.mongo.password }}
-{{- end }}
+          {{- end }}
             - name: ROCK_HOSTS
               value: ""
-{{- if .Values.opal.rock.imagesAllowed }}
+          {{- if .Values.opal.rock.imagesAllowed }}
             - name: ROCK_POD_IMAGES_ALLOWED
               value: {{ .Values.opal.rock.imagesAllowed }}
-{{- end }}
-{{- if .Values.opal.rock.specs }}
+          {{- end }}
+          {{- if .Values.opal.rock.specs }}
             - name: ROCK_POD_SPECS
               value: {{ .Values.opal.rock.specs | toJson | quote }}
-{{- end }}
+          {{- end }}
           volumeMounts:
             - name: opal-storage
               mountPath: /srv
