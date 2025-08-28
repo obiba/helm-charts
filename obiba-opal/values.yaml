@@ -23,7 +23,10 @@ mongo:
   port: "27017"
   database: opal
   username: root
-  password: example
+  auth:
+    password: example
+    existingSecret: ""
+    secretKey: MONGO_PASSWORD
 
 # PostgreSQL setup: enable if PostgreSQL is externally managed
 usePostgres: false
@@ -41,7 +44,10 @@ postgres:
     host: postgres
     port: "5432"
     username: postgres
-    password: example
+    auth:
+      password: example
+      existingSecret: ""
+      secretKey: POSTGRESDATA_PASSWORD
     database: opaldb
 
 # Opal configuration
@@ -56,7 +62,10 @@ opal:
   # Java options
   javaOpts: "-Xms1G -Xmx2G -XX:+UseG1GC"
   # Opal administrator password
-  adminPassword: password
+  adminPassword:
+    password: password
+    existingSecret: ""
+    secretKey: OPAL_ADMINISTRATOR_PASSWORD
   resources:
     # Requested resources at pod start  
     requests:

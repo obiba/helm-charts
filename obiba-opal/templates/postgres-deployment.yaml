@@ -23,7 +23,14 @@ spec:
             - name: POSTGRES_USER
               value: {{ .Values.postgres.data.username }}
             - name: POSTGRES_PASSWORD
-              value: {{ .Values.postgres.data.password }}
+          {{- if .Values.postgres.data.auth.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.data.auth.existingSecret }}
+                  key: {{ .Values.postgres.data.auth.secretKey }}
+          {{- else }}
+              value: {{ .Values.postgres.data.auth.password | quote }}
+          {{- end }}
             - name: POSTGRES_DB
               value: {{ .Values.postgres.data.database }}
           volumeMounts:

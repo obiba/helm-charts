@@ -23,7 +23,14 @@ spec:
             - name: MONGO_INITDB_ROOT_USERNAME
               value: {{ .Values.mongo.username }}
             - name: MONGO_INITDB_ROOT_PASSWORD
-              value: {{ .Values.mongo.password }}
+          {{- if .Values.mongo.auth.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mongo.auth.existingSecret }}
+                  key: {{ .Values.mongo.auth.secretKey }}
+          {{- else }}
+              value: {{ .Values.mongo.auth.password | quote }}
+          {{- end }}
           volumeMounts:
             - name: mongo-storage
               mountPath: /data/db

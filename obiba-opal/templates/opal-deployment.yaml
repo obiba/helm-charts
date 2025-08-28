@@ -26,7 +26,14 @@ spec:
             - name: JAVA_OPTS
               value: {{ .Values.opal.javaOpts }}
             - name: OPAL_ADMINISTRATOR_PASSWORD
-              value: {{ .Values.opal.adminPassword }}
+          {{- if .Values.opal.adminPassword.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.opal.adminPassword.existingSecret }}
+                  key: {{ .Values.opal.adminPassword.secretKey }}
+          {{- else }}
+              value: {{ .Values.opal.adminPassword.password | quote }}
+          {{- end }}
           {{- if or .Values.usePostgres .Values.postgres.data.enabled }}
             - name: POSTGRESDATA_HOST
               value: {{ .Values.postgres.data.host | default "postgres" }}
@@ -35,7 +42,14 @@ spec:
             - name: POSTGRESDATA_USER
               value: {{ .Values.postgres.data.username }}
             - name: POSTGRESDATA_PASSWORD
-              value: {{ .Values.postgres.data.password }}
+          {{- if .Values.postgres.data.auth.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.data.auth.existingSecret }}
+                  key: {{ .Values.postgres.data.auth.secretKey }}
+          {{- else }}
+              value: {{ .Values.postgres.data.auth.password | quote }}
+          {{- end }}
             - name: POSTGRESDATA_DATABASE
               value: {{ .Values.postgres.data.database }}
           {{- end }}
@@ -49,7 +63,14 @@ spec:
             - name: MONGO_USER
               value: {{ .Values.mongo.username }}
             - name: MONGO_PASSWORD
-              value: {{ .Values.mongo.password }}
+          {{- if .Values.mongo.auth.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mongo.auth.existingSecret }}
+                  key: {{ .Values.mongo.auth.secretKey }}
+          {{- else }}
+              value: {{ .Values.mongo.auth.password | quote }}
+          {{- end }}
           {{- end }}
             - name: ROCK_HOSTS
               value: ""
