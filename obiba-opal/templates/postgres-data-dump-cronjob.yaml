@@ -1,0 +1,51 @@
+{{- if and .Values.postgres.data.backup.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ printf "%s-dump-cronjob" .Values.postgres.data.name }}
+spec:
+  schedule: {{ .Values.postgres.data.backup.schedule }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: postgres-dump
+              image: {{ .Values.postgres.data.image }}
+              env:
+                - name: POSTGRES_USER
+              {{- if .Values.postgres.data.existingSecret }}
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.postgres.data.existingSecret }}
+                      key: {{ .Values.postgres.data.existingSecretKeys.user }}
+              {{- else }}
+                  value: {{ .Values.postgres.data.user | quote }}
+              {{- end }}
+                - name: POSTGRES_PASSWORD
+              {{- if .Values.postgres.data.existingSecret }}
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.postgres.data.existingSecret }}
+                      key: {{ .Values.postgres.data.existingSecretKeys.password }}
+              {{- else }}
+                  value: {{ .Values.postgres.data.password | quote }}
+              {{- end }}
+                - name: POSTGRES_HOST
+                  value: {{ .Values.postgres.data.host | quote }}
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  echo "*:*:*:${POSTGRES_USER}:${POSTGRES_PASSWORD}" > ~/.pgpass
+                  chmod 600 ~/.pgpass
+                  pg_dumpall -h ${POSTGRES_HOST} -U ${POSTGRES_USER} \
+                    | gzip -4 > /dump/postgres.sql.gz
+              volumeMounts:
+                - name: postgres-dump
+                  mountPath: /dump
+          volumes:
+            - name: postgres-dump
+              persistentVolumeClaim:
+                claimName: {{ printf "%s-dump-pvc" .Values.postgres.data.name }}
+          restartPolicy: OnFailure
+{{- end }}

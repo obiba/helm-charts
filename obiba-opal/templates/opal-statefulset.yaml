@@ -173,8 +173,8 @@ spec:
       spec:
         accessModes:
           - ReadWriteOnce
-        {{- if .Values.opal.storageClassName }}
-        storageClassName: {{ .Values.opal.storageClassName }}
+        {{- if .Values.global.storageClassName }}
+        storageClassName: {{ .Values.global.storageClassName }}
         {{- end }}
         resources:
           requests:

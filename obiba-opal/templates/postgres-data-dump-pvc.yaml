@@ -1,0 +1,18 @@
+{{- if and .Values.postgres.data.backup.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ printf "%s-dump-pvc" .Values.postgres.data.name }}
+  labels:
+    app: {{ .Values.postgres.data.name }}
+    component: backup
+spec:
+  accessModes:
+    - ReadWriteOnce
+  {{- if .Values.global.storageClassName }}
+  storageClassName: {{ .Values.global.storageClassName }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.postgres.data.backup.pvcSize | default "2Gi" }}
+{{- end }}

@@ -2,6 +2,10 @@ namespace: default
 
 nameOverride: "opal"
 
+global:
+  # Storage class for the PVC (leave empty for default storage class)
+  storageClassName: ""
+
 # Service account for the Rock spawner
 # This is gives the permission to the Opal server to spawn new Rock containers
 serviceAccount:
@@ -17,8 +21,6 @@ mongo:
   name: mongo
   image: mongo:8.0
   pvcSize: 1Gi
-  # Storage class for the PVC (leave empty for default storage class)
-  storageClassName: ""
   # MongoDB connection details (internal or external)
   host: mongo
   port: "27017"
@@ -48,8 +50,11 @@ postgres:
     name: postgres-data
     image: postgres:17-alpine
     pvcSize: 1Gi
-    # Storage class for the PVC (leave empty for default storage class)
-    storageClassName: ""
+    # Enable backup cronjob of internal or external PostgreSQL database
+    backup:
+      enabled: false
+      schedule: "0 2 * * *" # This schedule runs the job daily at 2 AM.
+      pvcSize: 2Gi
     # PostgreSQL connection details (internal or external)
     host: postgres-data
     port: "5432"
@@ -67,8 +72,11 @@ postgres:
     name: postgres-ids
     image: postgres:17-alpine
     pvcSize: 1Gi
-    # Storage class for the PVC (leave empty for default storage class)
-    storageClassName: ""
+    # Enable backup cronjob of internal or external PostgreSQL database
+    backup:
+      enabled: false
+      schedule: "0 2 * * *" # This schedule runs the job daily at 2 AM.
+      pvcSize: 2Gi
     # PostgreSQL connection details (internal or external)
     host: postgres-ids
     port: "5432"
@@ -88,8 +96,6 @@ opal:
   imagePullPolicy: Always
   # Opal PVC size for persistent storage of configuration files and runtime work directory 
   pvcSize: 1Gi
-  # Storage class for the PVC (leave empty for default storage class)
-  storageClassName: ""
   # Java options
   javaOpts: "-Xms1G -Xmx2G -XX:+UseG1GC"
   # Opal administrator password

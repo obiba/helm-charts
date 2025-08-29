@@ -49,8 +49,8 @@ spec:
       spec:
         accessModes:
           - ReadWriteOnce
-        {{- if .Values.mongo.storageClassName }}
-        storageClassName: {{ .Values.mongo.storageClassName }}
+        {{- if .Values.global.storageClassName }}
+        storageClassName: {{ .Values.global.storageClassName }}
         {{- end }}
         resources:
           requests:

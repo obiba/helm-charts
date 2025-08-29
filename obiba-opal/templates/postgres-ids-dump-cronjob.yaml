@@ -1,0 +1,51 @@
+{{- if and .Values.postgres.ids.backup.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ printf "%s-dump-cronjob" .Values.postgres.ids.name }}
+spec:
+  schedule: {{ .Values.postgres.ids.backup.schedule }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: postgres-dump
+              image: {{ .Values.postgres.ids.image }}
+              env:
+                - name: POSTGRES_USER
+              {{- if .Values.postgres.ids.existingSecret }}
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.postgres.ids.existingSecret }}
+                      key: {{ .Values.postgres.ids.existingSecretKeys.user }}
+              {{- else }}
+                  value: {{ .Values.postgres.ids.user | quote }}
+              {{- end }}
+                - name: POSTGRES_PASSWORD
+              {{- if .Values.postgres.ids.existingSecret }}
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.postgres.ids.existingSecret }}
+                      key: {{ .Values.postgres.ids.existingSecretKeys.password }}
+              {{- else }}
+                  value: {{ .Values.postgres.ids.password | quote }}
+              {{- end }}
+                - name: POSTGRES_HOST
+                  value: {{ .Values.postgres.ids.host | quote }}
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  echo "*:*:*:${POSTGRES_USER}:${POSTGRES_PASSWORD}" > ~/.pgpass
+                  chmod 600 ~/.pgpass
+                  pg_dumpall -h ${POSTGRES_HOST} -U ${POSTGRES_USER} \
+                    | gzip -4 > /dump/postgres.sql.gz
+              volumeMounts:
+                - name: postgres-dump
+                  mountPath: /dump
+          volumes:
+            - name: postgres-dump
+              persistentVolumeClaim:
+                claimName: {{ printf "%s-dump-pvc" .Values.postgres.ids.name }}
+          restartPolicy: OnFailure
+{{- end }}

@@ -54,12 +54,12 @@ spec:
     - metadata:
         name: postgres-storage
         labels:
-          app: postgres
+          app: {{ .Values.postgres.data.name }}
       spec:
         accessModes:
           - ReadWriteOnce
-        {{- if .Values.postgres.data.storageClassName }}
-        storageClassName: {{ .Values.postgres.data.storageClassName }}
+        {{- if .Values.global.storageClassName }}
+        storageClassName: {{ .Values.global.storageClassName }}
         {{- end }}
         resources:
           requests:
