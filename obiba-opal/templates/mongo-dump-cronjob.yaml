@@ -1,3 +1,4 @@
+{{- if .Values.mongo.backup.enabled }}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -89,3 +90,4 @@ spec:
               persistentVolumeClaim:
                 claimName: {{ printf "%s-dump-pvc" .Values.mongo.name }}
           restartPolicy: OnFailure
+{{- end }}

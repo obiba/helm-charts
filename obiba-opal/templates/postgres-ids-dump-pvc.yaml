@@ -1,4 +1,4 @@
-{{- if and .Values.postgres.ids.backup.enabled }}
+{{- if .Values.postgres.ids.backup.enabled }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:

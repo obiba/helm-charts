@@ -103,6 +103,11 @@ opal:
   pvcSize: 1Gi
   # Java options
   javaOpts: "-Xms1G -Xmx2G -XX:+UseG1GC"
+  # Enable backup cronjob of Opal files
+  backup:
+    enabled: false
+    schedule: "0 3 * * *" # This schedule runs the job daily at 3 AM.
+    pvcSize: 2Gi
   # Opal administrator password
   adminPassword:
     password: password

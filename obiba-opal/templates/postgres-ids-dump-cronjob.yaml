@@ -1,4 +1,4 @@
-{{- if and .Values.postgres.ids.backup.enabled }}
+{{- if .Values.postgres.ids.backup.enabled }}
 apiVersion: batch/v1
 kind: CronJob
 metadata:

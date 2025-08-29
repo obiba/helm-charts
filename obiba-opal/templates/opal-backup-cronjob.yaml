@@ -1,0 +1,36 @@
+{{- if .Values.opal.backup.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: opal-backup-cronjob
+spec:
+  schedule: {{ .Values.opal.backup.schedule | quote }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: opal-backup
+              image: alpine
+              command: ["/bin/sh", "-c"]
+              args:
+                # Use tar for consistency (safer than plain cp)
+                - |
+                  echo "Starting backup..."
+                  cd /source && tar -czf /backup/opal-$(date +%F).tar.gz conf data fs logs plugins
+                  echo "Backup completed at $(date)"
+              volumeMounts:
+                - name: source-pvc
+                  mountPath: /source
+                - name: backup-pvc
+                  mountPath: /backup
+          volumes:
+            - name: source-pvc
+              persistentVolumeClaim:
+                claimName: opal-storage-{{ include "opal.name" . }}-0
+            - name: backup-pvc
+              persistentVolumeClaim:
+                claimName: opal-backup
+
+{{- end }}

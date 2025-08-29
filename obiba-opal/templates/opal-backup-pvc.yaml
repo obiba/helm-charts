@@ -1,10 +1,10 @@
-{{- if .Values.postgres.data.backup.enabled }}
+{{- if and .Values.opal.backup.enabled }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ printf "%s-dump-pvc" .Values.postgres.data.name }}
+  name: opal-backup
   labels:
-    app: {{ .Values.postgres.data.name }}
+    app: {{ include "opal.name" . }}
     component: backup
 spec:
   accessModes:
@@ -14,5 +14,5 @@ spec:
   {{- end }}
   resources:
     requests:
-      storage: {{ .Values.postgres.data.backup.pvcSize | default "2Gi" }}
+      storage: {{ .Values.opal.backup.pvcSize | default "2Gi" }}
 {{- end }}
