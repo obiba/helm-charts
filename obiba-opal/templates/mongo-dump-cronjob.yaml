@@ -1,0 +1,91 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ printf "%s-dump-cronjob" .Values.mongo.name }}
+spec:
+  schedule: {{ .Values.mongo.backup.schedule }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: mongo-dump
+              image: {{ .Values.mongo.image }}
+              env:
+                - name: MONGO_HOST
+                  value: {{ .Values.mongo.host | default "mongo" }}
+                - name: MONGO_PORT
+                  value: "{{ .Values.mongo.port }}"
+                - name: MONGODATA_DATABASE
+              {{- if .Values.mongo.existingSecret }}
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.mongo.existingSecret }}
+                      key: {{ .Values.mongo.existingSecretKeys.database.data }}
+              {{- else }}
+                  value: {{ .Values.mongo.database.data | quote }}
+              {{- end }}
+                - name: MONGOIDS_DATABASE
+              {{- if .Values.mongo.existingSecret }}
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.mongo.existingSecret }}
+                      key: {{ .Values.mongo.existingSecretKeys.database.ids }}
+              {{- else }}
+                  value: {{ .Values.mongo.database.ids | quote }}
+              {{- end }}
+                - name: MONGO_USER
+              {{- if .Values.mongo.existingSecret }}
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.mongo.existingSecret }}
+                      key: {{ .Values.mongo.existingSecretKeys.user }}
+              {{- else }}
+                  value: {{ .Values.mongo.user | quote }}
+              {{- end }}
+                - name: MONGO_PASSWORD
+              {{- if .Values.mongo.existingSecret }}
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.mongo.existingSecret }}
+                      key: {{ .Values.mongo.existingSecretKeys.password }}
+              {{- else }}
+                  value: {{ .Values.mongo.password | quote }}
+              {{- end }}
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  if [ -n "$MONGODATA_DATABASE" ] && [ "$MONGODATA_DATABASE" != "" ]; then
+                    echo "Backing up MONGODATA_DATABASE: $MONGODATA_DATABASE"
+                    mongodump --host $MONGO_HOST \
+                      --port $MONGO_PORT \
+                      --username $MONGO_USER \
+                      --password $MONGO_PASSWORD \
+                      --authenticationDatabase admin \
+                      --db $MONGODATA_DATABASE \
+                      --archive=/dump/$MONGODATA_DATABASE.gz --gzip
+                  else
+                    echo "MONGODATA_DATABASE is not defined or empty, skipping backup"
+                  fi
+                  
+                  if [ -n "$MONGOIDS_DATABASE" ] && [ "$MONGOIDS_DATABASE" != "" ]; then
+                    echo "Backing up MONGOIDS_DATABASE: $MONGOIDS_DATABASE"
+                    mongodump --host $MONGO_HOST \
+                      --port $MONGO_PORT \
+                      --username $MONGO_USER \
+                      --password $MONGO_PASSWORD \
+                      --authenticationDatabase admin \
+                      --db $MONGOIDS_DATABASE \
+                      --archive=/dump/$MONGOIDS_DATABASE.gz --gzip
+                  else
+                    echo "MONGOIDS_DATABASE is not defined or empty, skipping backup"
+                  fi
+              volumeMounts:
+                - name: mongo-dump
+                  mountPath: /dump
+          volumes:
+            - name: mongo-dump
+              persistentVolumeClaim:
+                claimName: {{ printf "%s-dump-pvc" .Values.mongo.name }}
+          restartPolicy: OnFailure

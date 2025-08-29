@@ -1,0 +1,18 @@
+{{- if and .Values.mongo.backup.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ printf "%s-dump-pvc" .Values.mongo.name }}
+  labels:
+    app: {{ .Values.mongo.name }}
+    component: backup
+spec:
+  accessModes:
+    - ReadWriteOnce
+  {{- if .Values.global.storageClassName }}
+  storageClassName: {{ .Values.global.storageClassName }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.mongo.backup.pvcSize | default "2Gi" }}
+{{- end }}

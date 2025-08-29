@@ -33,12 +33,14 @@ spec:
               {{- end }}
                 - name: POSTGRES_HOST
                   value: {{ .Values.postgres.ids.host | quote }}
+                - name: POSTGRES_PORT
+                  value: {{ .Values.postgres.ids.port | quote }}
               command: ["/bin/sh", "-c"]
               args:
                 - |
                   echo "*:*:*:${POSTGRES_USER}:${POSTGRES_PASSWORD}" > ~/.pgpass
                   chmod 600 ~/.pgpass
-                  pg_dumpall -h ${POSTGRES_HOST} -U ${POSTGRES_USER} \
+                  pg_dumpall -h ${POSTGRES_HOST} -p ${POSTGRES_PORT} -U ${POSTGRES_USER} \
                     | gzip -4 > /dump/postgres.sql.gz
               volumeMounts:
                 - name: postgres-dump

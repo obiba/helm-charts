@@ -21,6 +21,11 @@ mongo:
   name: mongo
   image: mongo:8.0
   pvcSize: 1Gi
+  # Enable backup cronjob of internal or external MongoDB database
+  backup:
+    enabled: false
+    schedule: "0 1 * * *" # This schedule runs the job daily at 1 AM.
+    pvcSize: 2Gi
   # MongoDB connection details (internal or external)
   host: mongo
   port: "27017"
