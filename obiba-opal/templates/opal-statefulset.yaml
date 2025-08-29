@@ -1,0 +1,181 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "opal.name" . }}
+  labels:
+    {{- include "opal.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "opal.name" . }}
+  replicas: 1
+  selector:
+    matchLabels:
+      app: opal
+  template:
+    metadata:
+      labels:
+        app: opal
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      containers:
+        - name: opal
+          image: {{ .Values.opal.image }}
+          imagePullPolicy: {{ .Values.opal.imagePullPolicy }}
+          ports:
+            - containerPort: 8080
+          env:
+            - name: JAVA_OPTS
+              value: {{ .Values.opal.javaOpts }}
+            - name: OPAL_ADMINISTRATOR_PASSWORD
+          {{- if .Values.opal.adminPassword.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.opal.adminPassword.existingSecret }}
+                  key: {{ .Values.opal.adminPassword.secretKey }}
+          {{- else }}
+              value: {{ .Values.opal.adminPassword.password | quote }}
+          {{- end }}
+          # Postgres data
+          {{- if .Values.usePostgres.data }}
+            - name: POSTGRESDATA_HOST
+              value: {{ .Values.postgres.data.host | default "postgres-data" }}
+            - name: POSTGRESDATA_PORT
+              value: "{{ .Values.postgres.data.port }}"
+            - name: POSTGRESDATA_USER
+          {{- if .Values.postgres.data.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.data.existingSecret }}
+                  key: {{ .Values.postgres.data.existingSecretKeys.user }}
+          {{- else }}
+              value: {{ .Values.postgres.data.user | quote }}
+          {{- end }}
+            - name: POSTGRESDATA_PASSWORD
+          {{- if .Values.postgres.data.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.data.existingSecret }}
+                  key: {{ .Values.postgres.data.existingSecretKeys.password }}
+          {{- else }}
+              value: {{ .Values.postgres.data.password | quote }}
+          {{- end }}
+            - name: POSTGRESDATA_DATABASE
+          {{- if .Values.postgres.data.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.data.existingSecret }}
+                  key: {{ .Values.postgres.data.existingSecretKeys.database }}
+          {{- else }}
+              value: {{ .Values.postgres.data.database | quote }}
+          {{- end }}
+          {{- end }}
+          # Postgres IDs
+          {{- if .Values.usePostgres.ids }}
+            - name: POSTGRESIDS_HOST
+              value: {{ .Values.postgres.ids.host | default "postgres-ids" }}
+            - name: POSTGRESIDS_PORT
+              value: "{{ .Values.postgres.ids.port }}"
+            - name: POSTGRESIDS_USER
+          {{- if .Values.postgres.ids.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.ids.existingSecret }}
+                  key: {{ .Values.postgres.ids.existingSecretKeys.user }}
+          {{- else }}
+              value: {{ .Values.postgres.ids.user | quote }}
+          {{- end }}
+            - name: POSTGRESIDS_PASSWORD
+          {{- if .Values.postgres.ids.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.ids.existingSecret }}
+                  key: {{ .Values.postgres.ids.existingSecretKeys.password }}
+          {{- else }}
+              value: {{ .Values.postgres.ids.password | quote }}
+          {{- end }}
+            - name: POSTGRESIDS_DATABASE
+          {{- if .Values.postgres.ids.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.ids.existingSecret }}
+                  key: {{ .Values.postgres.ids.existingSecretKeys.database }}
+          {{- else }}
+              value: {{ .Values.postgres.ids.database | quote }}
+          {{- end }}
+          {{- end }}
+          # MongoDB data/IDs
+          {{- if .Values.useMongo }}
+            - name: MONGO_HOST
+              value: {{ .Values.mongo.host | default "mongo" }}
+            - name: MONGO_PORT
+              value: "{{ .Values.mongo.port }}"
+            - name: MONGODATA_DATABASE
+          {{- if .Values.mongo.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mongo.existingSecret }}
+                  key: {{ .Values.mongo.existingSecretKeys.database.data }}
+          {{- else }}
+              value: {{ .Values.mongo.database.data | quote }}
+          {{- end }}
+            - name: MONGOIDS_DATABASE
+          {{- if .Values.mongo.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mongo.existingSecret }}
+                  key: {{ .Values.mongo.existingSecretKeys.database.ids }}
+          {{- else }}
+              value: {{ .Values.mongo.database.ids | quote }}
+          {{- end }}
+            - name: MONGO_USER
+          {{- if .Values.mongo.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mongo.existingSecret }}
+                  key: {{ .Values.mongo.existingSecretKeys.user }}
+          {{- else }}
+              value: {{ .Values.mongo.user | quote }}
+          {{- end }}
+            - name: MONGO_PASSWORD
+          {{- if .Values.mongo.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mongo.existingSecret }}
+                  key: {{ .Values.mongo.existingSecretKeys.password }}
+          {{- else }}
+              value: {{ .Values.mongo.password | quote }}
+          {{- end }}
+          {{- end }}
+            - name: ROCK_HOSTS
+              value: ""
+          {{- if .Values.opal.rock.imagesAllowed }}
+            - name: ROCK_POD_IMAGES_ALLOWED
+              value: {{ .Values.opal.rock.imagesAllowed }}
+          {{- end }}
+          {{- if .Values.opal.rock.specs }}
+            - name: ROCK_POD_SPECS
+              value: {{ .Values.opal.rock.specs | toJson | quote }}
+          {{- end }}
+          volumeMounts:
+            - name: opal-storage
+              mountPath: /srv
+          resources:
+            requests:
+              memory: {{ .Values.opal.resources.requests.memory | default "1Gi" }}
+              cpu: {{ .Values.opal.resources.requests.cpu | default "1" }}
+            limits:
+              memory: {{ .Values.opal.resources.limits.memory | default "2Gi" }}
+              cpu: {{ .Values.opal.resources.limits.cpu | default "2" }}
+  volumeClaimTemplates:
+    - metadata:
+        name: opal-storage
+        labels:
+          {{- include "opal.labels" . | nindent 10 }}
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        {{- if .Values.opal.storageClassName }}
+        storageClassName: {{ .Values.opal.storageClassName }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.opal.pvcSize | default "1Gi" }}

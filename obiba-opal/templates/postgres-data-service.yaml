@@ -2,10 +2,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres
+  name: {{ .Values.postgres.data.name }}
 spec:
   ports:
     - port: 5432
   selector:
-    app: postgres
+    app: {{ .Values.postgres.data.name }}
 {{- end }}

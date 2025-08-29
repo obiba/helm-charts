@@ -1,0 +1,67 @@
+{{- if .Values.postgres.ids.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.postgres.ids.name }}
+spec:
+  serviceName: {{ .Values.postgres.ids.name }}
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.postgres.ids.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.postgres.ids.name }}
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.postgres.ids.image }}
+          ports:
+            - containerPort: {{ .Values.postgres.ids.port | default "5432" }}
+          env:
+            - name: POSTGRES_USER
+          {{- if .Values.postgres.ids.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.ids.existingSecret }}
+                  key: {{ .Values.postgres.ids.existingSecretKeys.user }}
+          {{- else }}
+              value: {{ .Values.postgres.ids.user | quote }}
+          {{- end }}
+            - name: POSTGRES_PASSWORD
+          {{- if .Values.postgres.ids.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.ids.existingSecret }}
+                  key: {{ .Values.postgres.ids.existingSecretKeys.password }}
+          {{- else }}
+              value: {{ .Values.postgres.ids.password | quote }}
+          {{- end }}
+            - name: POSTGRES_DB
+          {{- if .Values.postgres.ids.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.ids.existingSecret }}
+                  key: {{ .Values.postgres.ids.existingSecretKeys.database }}
+          {{- else }}
+              value: {{ .Values.postgres.ids.database | quote }}
+          {{- end }}
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-storage
+        labels:
+          app: postgres
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        {{- if .Values.postgres.data.storageClassName }}
+        storageClassName: {{ .Values.postgres.data.storageClassName }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.postgres.data.pvcSize | default "1Gi" }}
+{{- end }}

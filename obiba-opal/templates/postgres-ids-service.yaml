@@ -1,0 +1,11 @@
+{{- if .Values.postgres.ids.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.postgres.ids.name }}
+spec:
+  ports:
+    - port: 5432
+  selector:
+    app: {{ .Values.postgres.ids.name }}
+{{- end }}

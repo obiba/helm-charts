@@ -7,13 +7,14 @@ nameOverride: "opal"
 serviceAccount:
   name: rock-spawner-service-account
 
-# MongoDB setup: enable if MongoDB is externally managed
-useMongo: false
+# MongoDB setup: apply MongoDB configuration to Opal
+useMongo: true
 
 # MongoDB configuration
 mongo:
   # Enable internally managed MongoDB
   enabled: true
+  name: mongo
   image: mongo:8.0
   pvcSize: 1Gi
   # Storage class for the PVC (leave empty for default storage class)
@@ -21,34 +22,64 @@ mongo:
   # MongoDB connection details (internal or external)
   host: mongo
   port: "27017"
-  database: opal
-  username: root
-  auth:
-    password: example
-    existingSecret: ""
-    secretKey: MONGO_PASSWORD
+  database: 
+    data: mongo
+    ids: ids
+  user: root
+  password: example
+  existingSecret: ""
+  existingSecretKeys:
+    database: 
+      data: MONGO_DATABASE
+      ids: MONGO_IDS
+    user: MONGO_USER
+    password: MONGO_PASSWORD
 
-# PostgreSQL setup: enable if PostgreSQL is externally managed
-usePostgres: false
+# PostgreSQL setup: apply PostgreSQL configuration to Opal
+usePostgres:
+  data: false
+  ids: false
 
 # PostgreSQL configuration
 postgres:
   data:
-    # Enable internally managed PostgreSQL
+    # Enable internally managed PostgreSQL for data
     enabled: false
-    image: postgres:15
+    name: postgres-data
+    image: postgres:17-alpine
     pvcSize: 1Gi
     # Storage class for the PVC (leave empty for default storage class)
     storageClassName: ""
     # PostgreSQL connection details (internal or external)
-    host: postgres
+    host: postgres-data
     port: "5432"
-    username: postgres
-    auth:
-      password: example
-      existingSecret: ""
-      secretKey: POSTGRESDATA_PASSWORD
-    database: opaldb
+    database: postgres
+    user: postgres
+    password: example
+    existingSecret: ""
+    existingSecretKeys:
+      database: POSTGRESDATA_DATABASE
+      user: POSTGRESDATA_USER
+      password: POSTGRESDATA_PASSWORD
+  ids:
+    # Enable internally managed PostgreSQL for IDs
+    enabled: false
+    name: postgres-ids
+    image: postgres:17-alpine
+    pvcSize: 1Gi
+    # Storage class for the PVC (leave empty for default storage class)
+    storageClassName: ""
+    # PostgreSQL connection details (internal or external)
+    host: postgres-ids
+    port: "5432"
+    database: postgres
+    user: postgres
+    password: example
+    existingSecret: ""
+    existingSecretKeys:
+      database: POSTGRESIDS_DATABASE
+      user: POSTGRESIDS_USER
+      password: POSTGRESIDS_PASSWORD
 
 # Opal configuration
 opal:
@@ -86,7 +117,7 @@ opal:
         enabled: true
         container:
             # Pod name prefix
-            name: default
+            name: rock-default
             # Container image
             image: datashield/rock-base:latest
             # Container image pull policy
@@ -96,7 +127,7 @@ opal:
             resources:
                 # Requested resources at pod start
                 requests:
-                    cpu: 2000m
+                    cpu: 1000m
                     memory: 500Mi
                 # Limits of the resources used by the pod
                 limits:

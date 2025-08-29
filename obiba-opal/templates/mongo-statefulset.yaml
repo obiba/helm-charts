@@ -2,17 +2,17 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: mongo
+  name: {{ .Values.mongo.name }}
 spec:
-  serviceName: mongo
+  serviceName: {{ .Values.mongo.name }}
   replicas: 1
   selector:
     matchLabels:
-      app: mongo
+      app: {{ .Values.mongo.name }}
   template:
     metadata:
       labels:
-        app: mongo
+        app: {{ .Values.mongo.name }}
     spec:
       containers:
         - name: mongo
@@ -21,15 +21,22 @@ spec:
             - containerPort: {{ .Values.mongo.port | default "27017" }}
           env:
             - name: MONGO_INITDB_ROOT_USERNAME
-              value: {{ .Values.mongo.username }}
-            - name: MONGO_INITDB_ROOT_PASSWORD
-          {{- if .Values.mongo.auth.existingSecret }}
+          {{- if .Values.mongo.existingSecret }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.mongo.auth.existingSecret }}
-                  key: {{ .Values.mongo.auth.secretKey }}
+                  name: {{ .Values.mongo.existingSecret }}
+                  key: {{ .Values.mongo.existingSecretKeys.user }}
           {{- else }}
-              value: {{ .Values.mongo.auth.password | quote }}
+              value: {{ .Values.mongo.user | quote }}
+          {{- end }}
+            - name: MONGO_INITDB_ROOT_PASSWORD
+          {{- if .Values.mongo.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mongo.existingSecret }}
+                  key: {{ .Values.mongo.existingSecretKeys.password }}
+          {{- else }}
+              value: {{ .Values.mongo.password | quote }}
           {{- end }}
           volumeMounts:
             - name: mongo-storage
