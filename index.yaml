@@ -3,12 +3,12 @@ entries:
   obiba-opal:
   - apiVersion: v2
     appVersion: 5.2.0
-    created: "2025-08-30T16:51:48.092802765Z"
+    created: "2025-08-30T17:37:47.2390208Z"
     description: A Helm chart for deploying Opal with Rock spawner and database support
-    digest: 82382e595e8bacf42541a81c26e3670c52ced45de8a9df941a7df325862aaf02
+    digest: 91368c20ce2cf5fb5c29ccc3cfa95c287ab4f32f19df28a4168495cac549aaae
     name: obiba-opal
     type: application
     urls:
-    - https://obiba.github.io/helm-charts/obiba-opal-0.9.0.tgz
-    version: 0.9.0
-generated: "2025-08-30T16:51:48.091112055Z"
+    - https://obiba.github.io/helm-charts/obiba-opal-0.10.0.tgz
+    version: 0.10.0
+generated: "2025-08-30T17:37:47.237994941Z"
