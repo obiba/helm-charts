@@ -147,10 +147,23 @@ This section declares the default Rock server pods specifications.
 | `opal.rock.imagesAllowed` | Comma-separated list of allowed Rock images. Empty value means that any images can be declared in the pod specifications.  | `""` |
 | `opal.rock.specs[0].id` | Rock server profile identifier | `default` |
 | `opal.rock.specs[0].type` | Rock server type | `rock` |
+| `opal.rock.specs[0].description` | Rock server description | - |
 | `opal.rock.specs[0].enabled` | Enable this Rock specification | `true` |
+| `opal.rock.specs[0].namespace` | Namespace in which pod is to be created. Empty means same as Opal's. | - |
+| `opal.rock.specs[0].nodeName` | Name of the node in which pod is to be created. | - |
+| `opal.rock.specs[0].labels[0].key` | Pod label key | - |
+| `opal.rock.specs[0].labels[0].value` | Pod label value | - |
+| `opal.rock.specs[0].nodeSelector[0].key` | Node selection rule's key | - |
+| `opal.rock.specs[0].nodeSelector[0].value` | Node selection rule's value | - |
+| `opal.rock.specs[0].tolerations[0].key` | Pod [toleration](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) key | - |
+| `opal.rock.specs[0].tolerations[0].operator` | Pod [toleration](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) operator | - |
+| `opal.rock.specs[0].tolerations[0].value` | Pod [toleration](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) value | - |
+| `opal.rock.specs[0].tolerations[0].effect` | Pod [toleration](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) effect | - |
+| `opal.rock.specs[0].tolerations[0].tolerationSeconds` | Pod [toleration](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) seconds | - |
 | `opal.rock.specs[0].container.name` | Pod name prefix | `rock-default` |
 | `opal.rock.specs[0].container.image` | Rock container image | `datashield/rock-base:latest` |
 | `opal.rock.specs[0].container.imagePullPolicy` | Image pull policy | `IfNotPresent` |
+| `opal.rock.specs[0].container.imagePullSecret` | Image pull secret | - |
 | `opal.rock.specs[0].container.port` | Rock container port | `8085` |
 | `opal.rock.specs[0].container.resources.requests.cpu` | CPU request | `1000m` |
 | `opal.rock.specs[0].container.resources.requests.memory` | Memory request | `500Mi` |
@@ -290,5 +303,128 @@ postgres:
     pvcSize: 5Gi
     backup:
       pvcSize: 10Gi
+```
+
+### Rock Pod Configuration with Labels, Node Selection and Tolerations
+
+```yaml
+opal:
+  rock:
+    # Allow only specific Rock images
+    imagesAllowed: "datashield/rock-base:latest,datashield/rock-demodata:latest"
+    specs:
+      - id: default
+        type: rock
+        description: "Production Rock server for data analysis"
+        enabled: true
+        # Target specific namespace (optional)
+        namespace: "rock-servers"
+        # Target specific node (optional)
+        nodeName: "worker-node-1"
+        # Add custom labels to Rock pods
+        labels:
+          - key: "environment"
+            value: "production"
+          - key: "team"
+            value: "datascience"
+          - key: "cost-center"
+            value: "research"
+        # Select nodes with specific labels
+        nodeSelector:
+          - key: "node-type"
+            value: "compute-optimized"
+          - key: "storage"
+            value: "ssd"
+        # Allow pods on tainted nodes
+        tolerations:
+          - key: "dedicated"
+            operator: "Equal"
+            value: "research"
+            effect: "NoSchedule"
+          - key: "gpu"
+            operator: "Exists"
+            effect: "NoExecute"
+            tolerationSeconds: 3600
+        container:
+          name: rock-production
+          image: datashield/rock-base:latest
+          imagePullPolicy: IfNotPresent
+          imagePullSecret: "private-registry-secret"
+          port: 8085
+          resources:
+            requests:
+              cpu: 2000m
+              memory: 1Gi
+            limits:
+              cpu: 4000m
+              memory: 4Gi
+      
+      # Additional Rock specification for development
+      - id: development
+        type: rock
+        description: "Development Rock server"
+        enabled: true
+        labels:
+          - key: "environment"
+            value: "development"
+        nodeSelector:
+          - key: "node-type"
+            value: "general-purpose"
+        tolerations:
+          - key: "development"
+            operator: "Equal"
+            value: "true"
+            effect: "NoSchedule"
+        container:
+          name: rock-dev
+          image: datashield/rock-demodata:latest
+          imagePullPolicy: Always
+          port: 8085
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+```
+
+### Rock Pod Configuration for GPU Workloads
+
+```yaml
+opal:
+  rock:
+    specs:
+      - id: gpu-enabled
+        type: rock
+        description: "GPU-accelerated Rock server for ML workloads"
+        enabled: true
+        # Target GPU nodes
+        nodeSelector:
+          - key: "accelerator"
+            value: "nvidia-tesla-v100"
+        # Tolerate GPU node taints
+        tolerations:
+          - key: "nvidia.com/gpu"
+            operator: "Exists"
+            effect: "NoSchedule"
+        # Add GPU-specific labels
+        labels:
+          - key: "workload-type"
+            value: "gpu-compute"
+          - key: "gpu-memory"
+            value: "16gb"
+        container:
+          name: rock-gpu
+          image: datashield/rock-gpu:latest
+          resources:
+            requests:
+              cpu: 4000m
+              memory: 8Gi
+              nvidia.com/gpu: 1
+            limits:
+              cpu: 8000m
+              memory: 16Gi
+              nvidia.com/gpu: 1
 ```
 

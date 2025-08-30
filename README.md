@@ -13,3 +13,5 @@ Deployment:
 ```
 helm install myopal obiba-opal
 ```
+
+Documentation: see obiba-opal chart's README.
