@@ -2,7 +2,7 @@
 
 ## Opal with managed R server
 
-Opal deployment, with Rock spawner capability (on-demand R server management). Databases can included in deployment (default is MongoDB). Databases and Opal backup cron jobs can be enabled. 
+Opal deployment, with Rock spawner capability (on-demand R server management). Databases can be included in deployment (default is MongoDB). Databases and Opal backup cron jobs can be enabled.
 
 ## Databases
 
