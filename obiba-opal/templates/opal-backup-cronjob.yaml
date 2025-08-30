@@ -18,8 +18,18 @@ spec:
                 # Use tar for consistency (safer than plain cp)
                 - |
                   echo "Starting backup..."
-                  cd /source && tar -czf /backup/opal-$(date +%F).tar.gz conf data fs logs plugins
+                  cd /source && tar -czf /backup/opal-$(date +%F).tar.gz conf data fs logs
                   echo "Backup completed at $(date)"
+                  
+                  # Clean up old backups based on limit
+                  BACKUP_LIMIT={{ .Values.opal.backup.limit | default 10 }}
+                  echo "Keeping only $BACKUP_LIMIT most recent backups"
+                  
+                  # List backup files sorted by modification time (newest first) and remove old ones
+                  cd /backup && ls -t opal-*.tar.gz 2>/dev/null | tail -n +$((BACKUP_LIMIT + 1)) | xargs -r rm -f
+                  
+                  echo "Backup cleanup completed. Current backups:"
+                  ls -la /backup/opal-*.tar.gz 2>/dev/null || echo "No backup files found"
               volumeMounts:
                 - name: source-pvc
                   mountPath: /source

@@ -110,6 +110,7 @@ opal:
     enabled: false
     schedule: "0 3 * * *" # This schedule runs the job daily at 3 AM.
     pvcSize: 2Gi
+    limit: 10 # Number of backups to keep
   # Opal administrator password
   adminPassword:
     password: password

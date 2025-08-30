@@ -1,8 +1,8 @@
 # Opal Helm Chart
 
-## R server
+## Opal with managed R server
 
-Opal deployment, with Rock spawner capability (on-demand R server management).
+Opal deployment, with Rock spawner capability (on-demand R server management). Databases can included in deployment (default is MongoDB). Databases and Opal backup cron jobs can be enabled. 
 
 ## Databases
 
@@ -120,6 +120,7 @@ helm install myopal obiba/obiba-opal
 | `opal.backup.enabled` | Enable Opal files backup cronjob | `false` |
 | `opal.backup.schedule` | Backup schedule (cron format) | `"0 3 * * *"` |
 | `opal.backup.pvcSize` | Storage size for backup PVC | `2Gi` |
+| `opal.backup.limit` | Number of backup archives to keep | `10` |
 
 #### Opal Admin Password
 
