@@ -57,7 +57,7 @@ spec:
                 - /bin/sh
                 - -c
                 - |
-                  BACKUP_DATE=$(date +%F)
+                  BACKUP_DATE=$(date +%F_%H%M%S)
                   echo "Starting MongoDB backup for date: $BACKUP_DATE"
                   
                   if [ -n "$MONGODATA_DATABASE" ] && [ "$MONGODATA_DATABASE" != "" ]; then

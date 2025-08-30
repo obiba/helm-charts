@@ -38,7 +38,7 @@ spec:
               command: ["/bin/sh", "-c"]
               args:
                 - |
-                  BACKUP_DATE=$(date +%F)
+                  BACKUP_DATE=$(date +%F_%H%M%S)
                   echo "Starting PostgreSQL IDs backup for date: $BACKUP_DATE"
                   
                   echo "*:*:*:${POSTGRES_USER}:${POSTGRES_PASSWORD}" > ~/.pgpass

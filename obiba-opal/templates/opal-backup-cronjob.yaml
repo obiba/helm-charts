@@ -18,7 +18,7 @@ spec:
                 # Use tar for consistency (safer than plain cp)
                 - |
                   echo "Starting backup..."
-                  cd /source && tar -czf /backup/opal-$(date +%F).tar.gz conf data fs logs
+                  cd /source && tar -czf /backup/opal-$(date +%F_%H%M%S).tar.gz conf data fs logs
                   echo "Backup completed at $(date)"
                   
                   # Clean up old backups based on limit
