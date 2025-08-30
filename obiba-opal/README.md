@@ -28,6 +28,7 @@ helm install myopal obiba/obiba-opal
 | `namespace` | Kubernetes namespace | `default` |
 | `nameOverride` | Override the name of the chart | `"opal"` |
 | `global.storageClassName` | Storage class for PVCs (leave empty for default) | `""` |
+| `global.existingSecret` | Global existing secret name for credentials (can be overridden per component) | `""` |
 
 ### Service Account
 
@@ -53,7 +54,7 @@ helm install myopal obiba/obiba-opal
 | `mongo.database.ids` | MongoDB database name for IDs. If empty, the database of IDs is not enabled. | `ids` |
 | `mongo.user` | MongoDB username | `root` |
 | `mongo.password` | MongoDB password | `example` |
-| `mongo.existingSecret` | Name of existing secret for MongoDB credentials | `""` |
+| `mongo.existingSecret` | Name of existing secret for MongoDB credentials (overrides global.existingSecret) | `""` |
 | `mongo.existingSecretKeys.database.data` | Secret key for data database name | `MONGO_DATABASE` |
 | `mongo.existingSecretKeys.database.ids` | Secret key for IDs database name | `MONGO_IDS` |
 | `mongo.existingSecretKeys.user` | Secret key for username | `MONGO_USER` |
@@ -82,7 +83,7 @@ helm install myopal obiba/obiba-opal
 | `postgres.data.database` | PostgreSQL database name | `postgres` |
 | `postgres.data.user` | PostgreSQL username | `postgres` |
 | `postgres.data.password` | PostgreSQL password | `example` |
-| `postgres.data.existingSecret` | Name of existing secret for PostgreSQL credentials | `""` |
+| `postgres.data.existingSecret` | Name of existing secret for PostgreSQL credentials (overrides global.existingSecret) | `""` |
 | `postgres.data.existingSecretKeys.database` | Secret key for database name | `POSTGRESDATA_DATABASE` |
 | `postgres.data.existingSecretKeys.user` | Secret key for username | `POSTGRESDATA_USER` |
 | `postgres.data.existingSecretKeys.password` | Secret key for password | `POSTGRESDATA_PASSWORD` |
@@ -103,7 +104,7 @@ helm install myopal obiba/obiba-opal
 | `postgres.ids.database` | PostgreSQL database name | `postgres` |
 | `postgres.ids.user` | PostgreSQL username | `postgres` |
 | `postgres.ids.password` | PostgreSQL password | `example` |
-| `postgres.ids.existingSecret` | Name of existing secret for PostgreSQL credentials | `""` |
+| `postgres.ids.existingSecret` | Name of existing secret for PostgreSQL credentials (overrides global.existingSecret) | `""` |
 | `postgres.ids.existingSecretKeys.database` | Secret key for database name | `POSTGRESIDS_DATABASE` |
 | `postgres.ids.existingSecretKeys.user` | Secret key for username | `POSTGRESIDS_USER` |
 | `postgres.ids.existingSecretKeys.password` | Secret key for password | `POSTGRESIDS_PASSWORD` |
@@ -125,7 +126,7 @@ helm install myopal obiba/obiba-opal
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `opal.adminPassword.password` | Opal administrator password | `password` |
-| `opal.adminPassword.existingSecret` | Name of existing secret for admin password | `""` |
+| `opal.adminPassword.existingSecret` | Name of existing secret for admin password (overrides global.existingSecret) | `""` |
 | `opal.adminPassword.secretKey` | Secret key for admin password | `OPAL_ADMINISTRATOR_PASSWORD` |
 
 #### Opal Pod Resources
@@ -169,6 +170,55 @@ This section declares the default Rock server pods specifications.
 | `ingress.tls` | TLS configuration | `[]` |
 
 ## Examples
+
+### Using Global Secret for All Credentials
+
+```yaml
+global:
+  existingSecret: "opal-credentials"
+
+# All components will use the global secret unless overridden
+mongo:
+  # Uses global.existingSecret
+  enabled: false
+  host: mongodb.example.com
+
+postgres:
+  data:
+    # Uses global.existingSecret
+    enabled: false
+    host: postgres.example.com
+
+opal:
+  # Uses global.existingSecret for admin password
+  adminPassword:
+    # Will use global.existingSecret with key OPAL_ADMINISTRATOR_PASSWORD
+    password: ""  # Not used when existingSecret is set
+```
+
+### Mixing Global and Component-Specific Secrets
+
+```yaml
+global:
+  existingSecret: "shared-credentials"
+
+mongo:
+  # Override global secret for MongoDB only
+  existingSecret: "mongodb-specific-secret"
+  enabled: false
+  host: mongodb.example.com
+
+postgres:
+  data:
+    # Uses global.existingSecret
+    enabled: false
+    host: postgres.example.com
+
+opal:
+  adminPassword:
+    # Override global secret for Opal admin password
+    existingSecret: "opal-admin-secret"
+```
 
 ### Using External MongoDB
 

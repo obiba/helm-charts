@@ -21,19 +21,19 @@ spec:
             - containerPort: {{ .Values.mongo.port | default "27017" }}
           env:
             - name: MONGO_INITDB_ROOT_USERNAME
-          {{- if .Values.mongo.existingSecret }}
+          {{- if or .Values.mongo.existingSecret .Values.global.existingSecret }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.mongo.existingSecret }}
+                  name: {{ .Values.mongo.existingSecret | default .Values.global.existingSecret }}
                   key: {{ .Values.mongo.existingSecretKeys.user }}
           {{- else }}
               value: {{ .Values.mongo.user | quote }}
           {{- end }}
             - name: MONGO_INITDB_ROOT_PASSWORD
-          {{- if .Values.mongo.existingSecret }}
+          {{- if or .Values.mongo.existingSecret .Values.global.existingSecret }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.mongo.existingSecret }}
+                  name: {{ .Values.mongo.existingSecret | default .Values.global.existingSecret }}
                   key: {{ .Values.mongo.existingSecretKeys.password }}
           {{- else }}
               value: {{ .Values.mongo.password | quote }}

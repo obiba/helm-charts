@@ -21,28 +21,28 @@ spec:
             - containerPort: {{ .Values.postgres.data.port | default "5432" }}
           env:
             - name: POSTGRES_USER
-          {{- if .Values.postgres.data.existingSecret }}
+          {{- if or .Values.postgres.data.existingSecret .Values.global.existingSecret }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.postgres.data.existingSecret }}
+                  name: {{ .Values.postgres.data.existingSecret | default .Values.global.existingSecret }}
                   key: {{ .Values.postgres.data.existingSecretKeys.user }}
           {{- else }}
               value: {{ .Values.postgres.data.user | quote }}
           {{- end }}
             - name: POSTGRES_PASSWORD
-          {{- if .Values.postgres.data.existingSecret }}
+          {{- if or .Values.postgres.data.existingSecret .Values.global.existingSecret }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.postgres.data.existingSecret }}
+                  name: {{ .Values.postgres.data.existingSecret | default .Values.global.existingSecret }}
                   key: {{ .Values.postgres.data.existingSecretKeys.password }}
           {{- else }}
               value: {{ .Values.postgres.data.password | quote }}
           {{- end }}
             - name: POSTGRES_DB
-          {{- if .Values.postgres.data.existingSecret }}
+          {{- if or .Values.postgres.data.existingSecret .Values.global.existingSecret }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.postgres.data.existingSecret }}
+                  name: {{ .Values.postgres.data.existingSecret | default .Values.global.existingSecret }}
                   key: {{ .Values.postgres.data.existingSecretKeys.database }}
           {{- else }}
               value: {{ .Values.postgres.data.database | quote }}

@@ -26,10 +26,10 @@ spec:
             - name: JAVA_OPTS
               value: {{ .Values.opal.javaOpts }}
             - name: OPAL_ADMINISTRATOR_PASSWORD
-          {{- if .Values.opal.adminPassword.existingSecret }}
+          {{- if or .Values.opal.adminPassword.existingSecret .Values.global.existingSecret }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.opal.adminPassword.existingSecret }}
+                  name: {{ .Values.opal.adminPassword.existingSecret | default .Values.global.existingSecret }}
                   key: {{ .Values.opal.adminPassword.secretKey }}
           {{- else }}
               value: {{ .Values.opal.adminPassword.password | quote }}
@@ -41,28 +41,28 @@ spec:
             - name: POSTGRESDATA_PORT
               value: "{{ .Values.postgres.data.port }}"
             - name: POSTGRESDATA_USER
-          {{- if .Values.postgres.data.existingSecret }}
+          {{- if or .Values.postgres.data.existingSecret .Values.global.existingSecret }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.postgres.data.existingSecret }}
+                  name: {{ .Values.postgres.data.existingSecret | default .Values.global.existingSecret }}
                   key: {{ .Values.postgres.data.existingSecretKeys.user }}
           {{- else }}
               value: {{ .Values.postgres.data.user | quote }}
           {{- end }}
             - name: POSTGRESDATA_PASSWORD
-          {{- if .Values.postgres.data.existingSecret }}
+          {{- if or .Values.postgres.data.existingSecret .Values.global.existingSecret }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.postgres.data.existingSecret }}
+                  name: {{ .Values.postgres.data.existingSecret | default .Values.global.existingSecret }}
                   key: {{ .Values.postgres.data.existingSecretKeys.password }}
           {{- else }}
               value: {{ .Values.postgres.data.password | quote }}
           {{- end }}
             - name: POSTGRESDATA_DATABASE
-          {{- if .Values.postgres.data.existingSecret }}
+          {{- if or .Values.postgres.data.existingSecret .Values.global.existingSecret }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.postgres.data.existingSecret }}
+                  name: {{ .Values.postgres.data.existingSecret | default .Values.global.existingSecret }}
                   key: {{ .Values.postgres.data.existingSecretKeys.database }}
           {{- else }}
               value: {{ .Values.postgres.data.database | quote }}
@@ -75,28 +75,28 @@ spec:
             - name: POSTGRESIDS_PORT
               value: "{{ .Values.postgres.ids.port }}"
             - name: POSTGRESIDS_USER
-          {{- if .Values.postgres.ids.existingSecret }}
+          {{- if or .Values.postgres.ids.existingSecret .Values.global.existingSecret }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.postgres.ids.existingSecret }}
+                  name: {{ .Values.postgres.ids.existingSecret | default .Values.global.existingSecret }}
                   key: {{ .Values.postgres.ids.existingSecretKeys.user }}
           {{- else }}
               value: {{ .Values.postgres.ids.user | quote }}
           {{- end }}
             - name: POSTGRESIDS_PASSWORD
-          {{- if .Values.postgres.ids.existingSecret }}
+          {{- if or .Values.postgres.ids.existingSecret .Values.global.existingSecret }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.postgres.ids.existingSecret }}
+                  name: {{ .Values.postgres.ids.existingSecret | default .Values.global.existingSecret }}
                   key: {{ .Values.postgres.ids.existingSecretKeys.password }}
           {{- else }}
               value: {{ .Values.postgres.ids.password | quote }}
           {{- end }}
             - name: POSTGRESIDS_DATABASE
-          {{- if .Values.postgres.ids.existingSecret }}
+          {{- if or .Values.postgres.ids.existingSecret .Values.global.existingSecret }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.postgres.ids.existingSecret }}
+                  name: {{ .Values.postgres.ids.existingSecret | default .Values.global.existingSecret }}
                   key: {{ .Values.postgres.ids.existingSecretKeys.database }}
           {{- else }}
               value: {{ .Values.postgres.ids.database | quote }}
@@ -109,37 +109,37 @@ spec:
             - name: MONGO_PORT
               value: "{{ .Values.mongo.port }}"
             - name: MONGODATA_DATABASE
-          {{- if .Values.mongo.existingSecret }}
+          {{- if or .Values.mongo.existingSecret .Values.global.existingSecret }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.mongo.existingSecret }}
+                  name: {{ .Values.mongo.existingSecret | default .Values.global.existingSecret }}
                   key: {{ .Values.mongo.existingSecretKeys.database.data }}
           {{- else }}
               value: {{ .Values.mongo.database.data | quote }}
           {{- end }}
             - name: MONGOIDS_DATABASE
-          {{- if .Values.mongo.existingSecret }}
+          {{- if or .Values.mongo.existingSecret .Values.global.existingSecret }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.mongo.existingSecret }}
+                  name: {{ .Values.mongo.existingSecret | default .Values.global.existingSecret }}
                   key: {{ .Values.mongo.existingSecretKeys.database.ids }}
           {{- else }}
               value: {{ .Values.mongo.database.ids | quote }}
           {{- end }}
             - name: MONGO_USER
-          {{- if .Values.mongo.existingSecret }}
+          {{- if or .Values.mongo.existingSecret .Values.global.existingSecret }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.mongo.existingSecret }}
+                  name: {{ .Values.mongo.existingSecret | default .Values.global.existingSecret }}
                   key: {{ .Values.mongo.existingSecretKeys.user }}
           {{- else }}
               value: {{ .Values.mongo.user | quote }}
           {{- end }}
             - name: MONGO_PASSWORD
-          {{- if .Values.mongo.existingSecret }}
+          {{- if or .Values.mongo.existingSecret .Values.global.existingSecret }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.mongo.existingSecret }}
+                  name: {{ .Values.mongo.existingSecret | default .Values.global.existingSecret }}
                   key: {{ .Values.mongo.existingSecretKeys.password }}
           {{- else }}
               value: {{ .Values.mongo.password | quote }}

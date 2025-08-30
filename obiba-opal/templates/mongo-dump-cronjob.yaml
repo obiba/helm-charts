@@ -18,37 +18,37 @@ spec:
                 - name: MONGO_PORT
                   value: "{{ .Values.mongo.port }}"
                 - name: MONGODATA_DATABASE
-              {{- if .Values.mongo.existingSecret }}
+              {{- if or .Values.mongo.existingSecret .Values.global.existingSecret }}
                   valueFrom:
                     secretKeyRef:
-                      name: {{ .Values.mongo.existingSecret }}
+                      name: {{ .Values.mongo.existingSecret | default .Values.global.existingSecret }}
                       key: {{ .Values.mongo.existingSecretKeys.database.data }}
               {{- else }}
                   value: {{ .Values.mongo.database.data | quote }}
               {{- end }}
                 - name: MONGOIDS_DATABASE
-              {{- if .Values.mongo.existingSecret }}
+              {{- if or .Values.mongo.existingSecret .Values.global.existingSecret }}
                   valueFrom:
                     secretKeyRef:
-                      name: {{ .Values.mongo.existingSecret }}
+                      name: {{ .Values.mongo.existingSecret | default .Values.global.existingSecret }}
                       key: {{ .Values.mongo.existingSecretKeys.database.ids }}
               {{- else }}
                   value: {{ .Values.mongo.database.ids | quote }}
               {{- end }}
                 - name: MONGO_USER
-              {{- if .Values.mongo.existingSecret }}
+              {{- if or .Values.mongo.existingSecret .Values.global.existingSecret }}
                   valueFrom:
                     secretKeyRef:
-                      name: {{ .Values.mongo.existingSecret }}
+                      name: {{ .Values.mongo.existingSecret | default .Values.global.existingSecret }}
                       key: {{ .Values.mongo.existingSecretKeys.user }}
               {{- else }}
                   value: {{ .Values.mongo.user | quote }}
               {{- end }}
                 - name: MONGO_PASSWORD
-              {{- if .Values.mongo.existingSecret }}
+              {{- if or .Values.mongo.existingSecret .Values.global.existingSecret }}
                   valueFrom:
                     secretKeyRef:
-                      name: {{ .Values.mongo.existingSecret }}
+                      name: {{ .Values.mongo.existingSecret | default .Values.global.existingSecret }}
                       key: {{ .Values.mongo.existingSecretKeys.password }}
               {{- else }}
                   value: {{ .Values.mongo.password | quote }}

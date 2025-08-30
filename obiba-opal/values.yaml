@@ -5,6 +5,8 @@ nameOverride: "opal"
 global:
   # Storage class for the PVC (leave empty for default storage class)
   storageClassName: ""
+  # Existing secret for credentials
+  existingSecret: ""
 
 # Service account for the Rock spawner
 # This is gives the permission to the Opal server to spawn new Rock containers
@@ -34,7 +36,7 @@ mongo:
     ids: ids
   user: root
   password: example
-  existingSecret: ""
+  existingSecret: ""  # Override global.existingSecret if needed
   existingSecretKeys:
     database: 
       data: MONGO_DATABASE
@@ -66,7 +68,7 @@ postgres:
     database: postgres
     user: postgres
     password: example
-    existingSecret: ""
+    existingSecret: ""  # Override global.existingSecret if needed
     existingSecretKeys:
       database: POSTGRESDATA_DATABASE
       user: POSTGRESDATA_USER
@@ -88,7 +90,7 @@ postgres:
     database: postgres
     user: postgres
     password: example
-    existingSecret: ""
+    existingSecret: ""  # Override global.existingSecret if needed
     existingSecretKeys:
       database: POSTGRESIDS_DATABASE
       user: POSTGRESIDS_USER
@@ -111,7 +113,7 @@ opal:
   # Opal administrator password
   adminPassword:
     password: password
-    existingSecret: ""
+    existingSecret: ""  # Override global.existingSecret if needed
     secretKey: OPAL_ADMINISTRATOR_PASSWORD
   resources:
     # Requested resources at pod start  

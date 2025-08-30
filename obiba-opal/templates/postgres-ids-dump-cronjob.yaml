@@ -14,19 +14,19 @@ spec:
               image: {{ .Values.postgres.ids.image }}
               env:
                 - name: POSTGRES_USER
-              {{- if .Values.postgres.ids.existingSecret }}
+              {{- if or .Values.postgres.ids.existingSecret .Values.global.existingSecret }}
                   valueFrom:
                     secretKeyRef:
-                      name: {{ .Values.postgres.ids.existingSecret }}
+                      name: {{ .Values.postgres.ids.existingSecret | default .Values.global.existingSecret }}
                       key: {{ .Values.postgres.ids.existingSecretKeys.user }}
               {{- else }}
                   value: {{ .Values.postgres.ids.user | quote }}
               {{- end }}
                 - name: POSTGRES_PASSWORD
-              {{- if .Values.postgres.ids.existingSecret }}
+              {{- if or .Values.postgres.ids.existingSecret .Values.global.existingSecret }}
                   valueFrom:
                     secretKeyRef:
-                      name: {{ .Values.postgres.ids.existingSecret }}
+                      name: {{ .Values.postgres.ids.existingSecret | default .Values.global.existingSecret }}
                       key: {{ .Values.postgres.ids.existingSecretKeys.password }}
               {{- else }}
                   value: {{ .Values.postgres.ids.password | quote }}
