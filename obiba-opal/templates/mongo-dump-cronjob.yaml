@@ -57,6 +57,9 @@ spec:
                 - /bin/sh
                 - -c
                 - |
+                  BACKUP_DATE=$(date +%F)
+                  echo "Starting MongoDB backup for date: $BACKUP_DATE"
+                  
                   if [ -n "$MONGODATA_DATABASE" ] && [ "$MONGODATA_DATABASE" != "" ]; then
                     echo "Backing up MONGODATA_DATABASE: $MONGODATA_DATABASE"
                     mongodump --host $MONGO_HOST \
@@ -65,7 +68,7 @@ spec:
                       --password $MONGO_PASSWORD \
                       --authenticationDatabase admin \
                       --db $MONGODATA_DATABASE \
-                      --archive=/dump/$MONGODATA_DATABASE.gz --gzip
+                      --archive=/dump/mongodata-$BACKUP_DATE.gz --gzip
                   else
                     echo "MONGODATA_DATABASE is not defined or empty, skipping backup"
                   fi
@@ -78,10 +81,25 @@ spec:
                       --password $MONGO_PASSWORD \
                       --authenticationDatabase admin \
                       --db $MONGOIDS_DATABASE \
-                      --archive=/dump/$MONGOIDS_DATABASE.gz --gzip
+                      --archive=/dump/mongoids-$BACKUP_DATE.gz --gzip
                   else
                     echo "MONGOIDS_DATABASE is not defined or empty, skipping backup"
                   fi
+                  
+                  echo "MongoDB backup completed at $(date)"
+                  
+                  # Clean up old backups based on limit
+                  BACKUP_LIMIT={{ .Values.mongo.backup.limit | default 10 }}
+                  echo "Keeping only $BACKUP_LIMIT most recent backups for each database"
+                  
+                  # Clean up mongodata backups
+                  cd /dump && ls -t mongodata-*.gz 2>/dev/null | tail -n +$((BACKUP_LIMIT + 1)) | xargs -r rm -f
+                  
+                  # Clean up mongoids backups
+                  cd /dump && ls -t mongoids-*.gz 2>/dev/null | tail -n +$((BACKUP_LIMIT + 1)) | xargs -r rm -f
+                  
+                  echo "MongoDB backup cleanup completed. Current backups:"
+                  ls -la /dump/mongo*.gz 2>/dev/null | sort || echo "No backup files found"
               volumeMounts:
                 - name: mongo-dump
                   mountPath: /dump

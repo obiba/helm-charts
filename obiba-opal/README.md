@@ -48,6 +48,7 @@ helm install myopal obiba/obiba-opal
 | `mongo.backup.enabled` | Enable MongoDB backup cronjob | `false` |
 | `mongo.backup.schedule` | Backup schedule (cron format) | `"0 1 * * *"` |
 | `mongo.backup.pvcSize` | Storage size for backup PVC | `2Gi` |
+| `mongo.backup.limit` | Number of backup archives to keep | `10` |
 | `mongo.host` | MongoDB host (internal or external) | `mongo` |
 | `mongo.port` | MongoDB port | `"27017"` |
 | `mongo.database.data` | MongoDB database name for data | `mongo` |
@@ -78,6 +79,7 @@ helm install myopal obiba/obiba-opal
 | `postgres.data.backup.enabled` | Enable PostgreSQL backup cronjob | `false` |
 | `postgres.data.backup.schedule` | Backup schedule (cron format) | `"0 2 * * *"` |
 | `postgres.data.backup.pvcSize` | Storage size for backup PVC | `2Gi` |
+| `postgres.data.backup.limit` | Number of backup archives to keep | `10` |
 | `postgres.data.host` | PostgreSQL host (internal or external) | `postgres-data` |
 | `postgres.data.port` | PostgreSQL port | `"5432"` |
 | `postgres.data.database` | PostgreSQL database name | `postgres` |
@@ -99,6 +101,7 @@ helm install myopal obiba/obiba-opal
 | `postgres.ids.backup.enabled` | Enable PostgreSQL backup cronjob | `false` |
 | `postgres.ids.backup.schedule` | Backup schedule (cron format) | `"0 2 * * *"` |
 | `postgres.ids.backup.pvcSize` | Storage size for backup PVC | `2Gi` |
+| `postgres.ids.backup.limit` | Number of backup archives to keep | `10` |
 | `postgres.ids.host` | PostgreSQL host (internal or external) | `postgres-ids` |
 | `postgres.ids.port` | PostgreSQL port | `"5432"` |
 | `postgres.ids.database` | PostgreSQL database name | `postgres` |

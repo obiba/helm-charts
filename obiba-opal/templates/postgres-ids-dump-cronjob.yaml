@@ -38,10 +38,25 @@ spec:
               command: ["/bin/sh", "-c"]
               args:
                 - |
+                  BACKUP_DATE=$(date +%F)
+                  echo "Starting PostgreSQL IDs backup for date: $BACKUP_DATE"
+                  
                   echo "*:*:*:${POSTGRES_USER}:${POSTGRES_PASSWORD}" > ~/.pgpass
                   chmod 600 ~/.pgpass
                   pg_dumpall -h ${POSTGRES_HOST} -p ${POSTGRES_PORT} -U ${POSTGRES_USER} \
-                    | gzip -4 > /dump/postgres.sql.gz
+                    | gzip -4 > /dump/postgres-ids-$BACKUP_DATE.sql.gz
+                  
+                  echo "PostgreSQL IDs backup completed at $(date)"
+                  
+                  # Clean up old backups based on limit
+                  BACKUP_LIMIT={{ .Values.postgres.ids.backup.limit | default 10 }}
+                  echo "Keeping only $BACKUP_LIMIT most recent PostgreSQL IDs backups"
+                  
+                  # Clean up old backup files
+                  cd /dump && ls -t postgres-ids-*.sql.gz 2>/dev/null | tail -n +$((BACKUP_LIMIT + 1)) | xargs -r rm -f
+                  
+                  echo "PostgreSQL IDs backup cleanup completed. Current backups:"
+                  ls -la /dump/postgres-ids-*.sql.gz 2>/dev/null | sort || echo "No backup files found"
               volumeMounts:
                 - name: postgres-dump
                   mountPath: /dump

@@ -28,6 +28,7 @@ mongo:
     enabled: false
     schedule: "0 1 * * *" # This schedule runs the job daily at 1 AM.
     pvcSize: 2Gi
+    limit: 10 # Number of backups to keep
   # MongoDB connection details (internal or external)
   host: mongo
   port: "27017"
@@ -62,6 +63,7 @@ postgres:
       enabled: false
       schedule: "0 2 * * *" # This schedule runs the job daily at 2 AM.
       pvcSize: 2Gi
+      limit: 10 # Number of backups to keep
     # PostgreSQL connection details (internal or external)
     host: postgres-data
     port: "5432"
@@ -84,6 +86,7 @@ postgres:
       enabled: false
       schedule: "0 2 * * *" # This schedule runs the job daily at 2 AM.
       pvcSize: 2Gi
+      limit: 10 # Number of backups to keep
     # PostgreSQL connection details (internal or external)
     host: postgres-ids
     port: "5432"
