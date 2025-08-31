@@ -4,8 +4,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: {{ printf "%s-dump-pvc" .Values.postgres.data.name }}
   labels:
-    app: {{ .Values.postgres.data.name }}
-    component: backup
+    {{- include "postgres.data.dump.pvc.labels" . | nindent 4 }}
 spec:
   accessModes:
     - ReadWriteOnce

@@ -3,6 +3,8 @@ kind: Role
 metadata:
   namespace: {{ .Values.namespace }}
   name: pod-manager-role
+  labels:
+    {{- include "obiba.labels" . | nindent 4 }}
 rules:
   - apiGroups: [""]
     resources: ["pods", "services"]

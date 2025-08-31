@@ -3,9 +3,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Values.postgres.data.name }}
+  labels:
+    {{- include "postgres.data.labels" . | nindent 4 }}
 spec:
   ports:
     - port: 5432
   selector:
-    app: {{ .Values.postgres.data.name }}
+    {{- include "postgres.data.selectorLabels" . | nindent 4 }}
 {{- end }}

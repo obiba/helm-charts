@@ -3,16 +3,18 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ .Values.postgres.ids.name }}
+  labels:
+    {{- include "postgres.ids.labels" . | nindent 4 }}
 spec:
   serviceName: {{ .Values.postgres.ids.name }}
   replicas: 1
   selector:
     matchLabels:
-      app: {{ .Values.postgres.ids.name }}
+      {{- include "postgres.ids.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app: {{ .Values.postgres.ids.name }}
+        {{- include "postgres.ids.selectorLabels" . | nindent 8 }}
     spec:
       containers:
         - name: postgres
@@ -54,7 +56,7 @@ spec:
     - metadata:
         name: postgres-storage
         labels:
-          app: postgres
+          {{- include "postgres.ids.pvc.labels" . | nindent 10 }}
       spec:
         accessModes:
           - ReadWriteOnce

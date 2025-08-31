@@ -102,7 +102,7 @@ postgres:
 # Opal configuration
 opal:
   # Container image configuration
-  image: obiba/opal:latest
+  image: obiba/opal:5.2
   imagePullPolicy: Always
   # Opal PVC size for persistent storage of configuration files and runtime work directory 
   pvcSize: 1Gi
@@ -162,6 +162,8 @@ ingress:
   enabled: false
   # Ingress class name, e.g., "nginx"
   className: "nginx"
+  # Ingress labels
+  labels: {}
   # Extra annotations like cert-manager etc.
   annotations: {}
   hosts:

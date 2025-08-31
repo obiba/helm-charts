@@ -3,6 +3,8 @@ kind: RoleBinding
 metadata:
   name: pod-manager-rolebinding
   namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "obiba.labels" . | nindent 4 }}
 subjects:
   - kind: ServiceAccount
     name: {{ .Values.serviceAccount.name }}

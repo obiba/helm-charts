@@ -116,7 +116,7 @@ helm install myopal obiba/obiba-opal
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `opal.image` | Opal container image | `obiba/opal:latest` |
+| `opal.image` | Opal container image | `obiba/opal:5.2` |
 | `opal.imagePullPolicy` | Image pull policy | `Always` |
 | `opal.pvcSize` | Storage size for Opal PVC | `1Gi` |
 | `opal.javaOpts` | Java options for Opal | `"-Xms1G -Xmx2G -XX:+UseG1GC"` |

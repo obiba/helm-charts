@@ -4,8 +4,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: opal-backup
   labels:
-    app: {{ include "opal.name" . }}
-    component: backup
+    {{- include "opal.backup.pvc.labels" . | nindent 4 }}
 spec:
   accessModes:
     - ReadWriteOnce

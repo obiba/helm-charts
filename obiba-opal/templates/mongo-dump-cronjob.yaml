@@ -3,6 +3,8 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: {{ printf "%s-dump-cronjob" .Values.mongo.name }}
+  labels:
+    {{- include "mongo.dump.labels" . | nindent 4 }}
 spec:
   schedule: {{ .Values.mongo.backup.schedule }}
   jobTemplate:

@@ -4,8 +4,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: {{ printf "%s-dump-pvc" .Values.mongo.name }}
   labels:
-    app: {{ .Values.mongo.name }}
-    component: backup
+    {{- include "mongo.dump.pvc.labels" . | nindent 4 }}
 spec:
   accessModes:
     - ReadWriteOnce

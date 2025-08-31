@@ -3,6 +3,8 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: opal-backup-cronjob
+  labels:
+    {{- include "opal.backup.labels" . | nindent 4 }}
 spec:
   schedule: {{ .Values.opal.backup.schedule | quote }}
   jobTemplate:

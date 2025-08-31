@@ -3,16 +3,18 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ .Values.mongo.name }}
+  labels:
+    {{- include "mongo.labels" . | nindent 4 }}
 spec:
   serviceName: {{ .Values.mongo.name }}
   replicas: 1
   selector:
     matchLabels:
-      app: {{ .Values.mongo.name }}
+      {{- include "mongo.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app: {{ .Values.mongo.name }}
+        {{- include "mongo.selectorLabels" . | nindent 8 }}
     spec:
       containers:
         - name: mongo
@@ -45,7 +47,7 @@ spec:
     - metadata:
         name: mongo-storage
         labels:
-          app: mongo
+          {{- include "mongo.pvc.labels" . | nindent 10 }}
       spec:
         accessModes:
           - ReadWriteOnce

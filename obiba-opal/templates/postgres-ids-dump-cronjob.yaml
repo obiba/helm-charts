@@ -3,6 +3,8 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: {{ printf "%s-dump-cronjob" .Values.postgres.ids.name }}
+  labels:
+    {{- include "postgres.ids.dump.labels" . | nindent 4 }}
 spec:
   schedule: {{ .Values.postgres.ids.backup.schedule }}
   jobTemplate:

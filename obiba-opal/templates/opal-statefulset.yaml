@@ -9,11 +9,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: opal
+      {{- include "opal.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app: opal
+        {{- include "opal.selectorLabels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name }}
       containers:
@@ -169,7 +169,7 @@ spec:
     - metadata:
         name: opal-storage
         labels:
-          {{- include "opal.labels" . | nindent 10 }}
+          {{- include "opal.pvc.labels" . | nindent 10 }}
       spec:
         accessModes:
           - ReadWriteOnce
