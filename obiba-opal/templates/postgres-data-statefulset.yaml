@@ -49,6 +49,19 @@ spec:
           {{- else }}
               value: {{ .Values.postgres.data.database | quote }}
           {{- end }}
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.postgres.data.port | default "5432" }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - $POSTGRES_USER
+            initialDelaySeconds: 5
+            periodSeconds: 10
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgresql/data

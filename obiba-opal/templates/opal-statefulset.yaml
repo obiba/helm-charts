@@ -155,6 +155,16 @@ spec:
             - name: ROCK_POD_SPECS
               value: {{ .Values.opal.rock.specs | toJson | quote }}
           {{- end }}
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.opal.port | default "8080" }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.opal.port | default "8080" }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
           volumeMounts:
             - name: opal-storage
               mountPath: /srv

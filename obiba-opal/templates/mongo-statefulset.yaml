@@ -40,6 +40,17 @@ spec:
           {{- else }}
               value: {{ .Values.mongo.password | quote }}
           {{- end }}
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.mongo.port | default "27017" }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - "mongosh --host localhost --port 27017 -u $MONGO_INITDB_ROOT_USERNAME -p $MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin --eval 'db.runCommand(\"ping\")'"
           volumeMounts:
             - name: mongo-storage
               mountPath: /data/db
