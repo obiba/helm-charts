@@ -36,7 +36,17 @@ jobs:
     - name: Create index.yaml
       run: |
         mkdir -p docs
-        helm repo index .cr-release-packages --url https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+        mkdir -p .cr-release-packages
+        # Copy old archives to the release package directory
+        if compgen -G "docs/*.tgz" > /dev/null; then
+          cp docs/*.tgz .cr-release-packages/
+        fi
+        # Merge old index if it exists
+        if [ -f docs/index.yaml ]; then
+          helm repo index .cr-release-packages --url https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }} --merge docs/index.yaml
+        else
+          helm repo index .cr-release-packages --url https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+        fi
         mv .cr-release-packages/*.tgz docs/
         mv .cr-release-packages/index.yaml docs/
 
