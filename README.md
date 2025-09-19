@@ -11,7 +11,7 @@ helm repo add obiba https://www.obiba.org/helm-charts
 Deployment:
 
 ```
-helm install myopal obiba-opal
+helm install myopal obiba/obiba-opal
 ```
 
 Documentation: see obiba-opal chart's README.
