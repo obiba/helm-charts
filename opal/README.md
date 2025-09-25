@@ -16,7 +16,7 @@ For each of these databases (internal/external Mongodb/PostgreSQL), a backup cro
 
 ```
 helm repo add obiba https://obiba.github.io/helm-charts
-helm install myopal obiba/obiba-opal
+helm install myopal obiba/opal
 ```
 
 ## Values

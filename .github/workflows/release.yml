@@ -19,7 +19,7 @@ jobs:
     - name: Validate tag matches chart version
       run: |
         TAG_VERSION=${GITHUB_REF#refs/tags/}
-        CHART_VERSION=$(grep '^version:' obiba-opal/Chart.yaml | awk '{print $2}')
+        CHART_VERSION=$(grep '^version:' opal/Chart.yaml | awk '{print $2}')
         echo "Tag version: $TAG_VERSION"
         echo "Chart version: $CHART_VERSION"
         if [ "$TAG_VERSION" != "$CHART_VERSION" ]; then
@@ -31,12 +31,29 @@ jobs:
     - name: Package chart
       run: |
         mkdir -p .cr-release-packages
-        helm package obiba-opal --destination .cr-release-packages
+        helm package opal --destination .cr-release-packages
 
-    - name: Create index.yaml
+    - name: Fetch existing GitHub Pages content
       run: |
         mkdir -p docs
         mkdir -p .cr-release-packages
+        # Try to fetch existing content from gh-pages branch
+        if git ls-remote --heads origin gh-pages | grep -q gh-pages; then
+          echo "gh-pages branch exists, fetching existing content..."
+          git fetch origin gh-pages
+          # Create a temporary directory and extract files from gh-pages
+          git show origin/gh-pages:index.yaml > docs/index.yaml 2>/dev/null || echo "No index.yaml in gh-pages branch yet"
+          # Extract .tgz files from gh-pages branch
+          git ls-tree -r --name-only origin/gh-pages | grep '\.tgz$' | while read file; do
+            echo "Extracting $file from gh-pages branch"
+            git show "origin/gh-pages:$file" > "docs/$(basename "$file")"
+          done 2>/dev/null || echo "No .tgz files in gh-pages branch yet"
+        else
+          echo "gh-pages branch does not exist yet, starting fresh"
+        fi
+
+    - name: Create index.yaml
+      run: |
         # Copy old archives to the release package directory
         if compgen -G "docs/*.tgz" > /dev/null; then
           cp docs/*.tgz .cr-release-packages/

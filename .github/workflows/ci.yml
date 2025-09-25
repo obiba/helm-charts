@@ -6,14 +6,14 @@ on:
       - master
       - dev
     paths:
-      - 'obiba-opal/**'
+      - 'opal/**'
       - '.github/workflows/ci.yml'
   pull_request:
     branches:
       - master
       - dev
     paths:
-      - 'obiba-opal/**'
+      - 'opal/**'
       - '.github/workflows/ci.yml'
 
 jobs:
@@ -29,31 +29,31 @@ jobs:
 
     - name: Lint Helm chart
       run: |
-        helm lint obiba-opal
+        helm lint opal
 
     - name: Validate Helm templates
       run: |
-        helm template obiba-opal obiba-opal/ --debug
+        helm template opal opal/ --debug
 
     - name: Test Helm package
       run: |
         mkdir -p test-packages
-        helm package obiba-opal --destination test-packages
+        helm package opal --destination test-packages
         echo "Package created successfully:"
         ls -la test-packages/
 
     - name: Validate Chart.yaml
       run: |
         # Check required fields in Chart.yaml
-        if ! grep -q "^apiVersion:" obiba-opal/Chart.yaml; then
+        if ! grep -q "^apiVersion:" opal/Chart.yaml; then
           echo "Error: Missing apiVersion in Chart.yaml"
           exit 1
         fi
-        if ! grep -q "^name:" obiba-opal/Chart.yaml; then
+        if ! grep -q "^name:" opal/Chart.yaml; then
           echo "Error: Missing name in Chart.yaml"
           exit 1
         fi
-        if ! grep -q "^version:" obiba-opal/Chart.yaml; then
+        if ! grep -q "^version:" opal/Chart.yaml; then
           echo "Error: Missing version in Chart.yaml"
           exit 1
         fi
@@ -62,17 +62,17 @@ jobs:
     - name: Test with different values
       run: |
         # Test with MongoDB enabled
-        helm template obiba-opal obiba-opal/ --set mongo.enabled=true --debug
+        helm template opal opal/ --set mongo.enabled=true --debug
         
         # Test with PostgreSQL enabled
-        helm template obiba-opal obiba-opal/ --set postgres.data.enabled=true --debug
+        helm template opal opal/ --set postgres.data.enabled=true --debug
         
         # Test with Ingress enabled
-        helm template obiba-opal obiba-opal/ --set ingress.enabled=true --debug
+        helm template opal opal/ --set ingress.enabled=true --debug
         
         echo "All template tests passed"
 
     - name: Validate YAML syntax
       run: |
         # Check all YAML files for syntax errors
-        find obiba-opal/templates -name "*.yaml" -exec echo "Validating {}" \; -exec helm template obiba-opal obiba-opal/ --show-only {} \;
+        find opal/templates -name "*.yaml" -exec echo "Validating {}" \; -exec helm template opal opal/ --show-only {} \;
