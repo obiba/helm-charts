@@ -7,5 +7,5 @@ metadata:
     {{- include "obiba.labels" . | nindent 4 }}
 rules:
   - apiGroups: [""]
-    resources: ["pods", "services"]
-    verbs: ["create", "delete", "get", "list"]
+    resources: ["pods", "services", "events"]
+    verbs: ["create", "delete", "get", "list", "watch"]
