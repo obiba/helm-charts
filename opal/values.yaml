@@ -102,7 +102,7 @@ postgres:
 # Opal configuration
 opal:
   # Container image configuration
-  image: obiba/opal:5.2
+  image: obiba/opal:5.3
   imagePullPolicy: Always
   # Opal PVC size for persistent storage of configuration files and runtime work directory 
   pvcSize: 1Gi
