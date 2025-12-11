@@ -4,7 +4,12 @@ metadata:
   name: {{ include "opal.name" . }}
   labels:
     {{ include "opal.labels" . | nindent 4 }}
+  {{- with .Values.opal.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
+  type: {{ .Values.opal.service.type | default "ClusterIP" }}
   ports:
     - port: 80
       targetPort: 8080

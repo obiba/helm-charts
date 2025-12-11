@@ -22,6 +22,8 @@ mongo:
   enabled: true
   name: mongo
   image: mongo:8.0
+  # Pod annotations for MongoDB
+  podAnnotations: {}
   pvcSize: 1Gi
   # Enable backup cronjob of internal or external MongoDB database
   backup:
@@ -39,11 +41,26 @@ mongo:
   password: example
   existingSecret: ""  # Override global.existingSecret if needed
   existingSecretKeys:
-    database: 
+    database:
       data: MONGO_DATABASE
       ids: MONGO_IDS
     user: MONGO_USER
     password: MONGO_PASSWORD
+  # Service configuration
+  service:
+    type: ClusterIP
+    annotations: {}
+  # Security context
+  podSecurityContext: {}
+  securityContext: {}
+  # Priority class name for scheduling
+  priorityClassName: ""
+  # Node selector for assignment
+  nodeSelector: {}
+  # Affinity rules for scheduling
+  affinity: {}
+  # Tolerations for scheduling
+  tolerations: []
 
 # PostgreSQL setup: apply PostgreSQL configuration to Opal
 usePostgres:
@@ -57,6 +74,8 @@ postgres:
     enabled: false
     name: postgres-data
     image: postgres:17-alpine
+    # Pod annotations for PostgreSQL
+    podAnnotations: {}
     pvcSize: 1Gi
     # Enable backup cronjob of internal or external PostgreSQL database
     backup:
@@ -75,11 +94,28 @@ postgres:
       database: POSTGRESDATA_DATABASE
       user: POSTGRESDATA_USER
       password: POSTGRESDATA_PASSWORD
+    # Service configuration
+    service:
+      type: ClusterIP
+      annotations: {}
+    # Security context
+    podSecurityContext: {}
+    securityContext: {}
+    # Priority class name for scheduling
+    priorityClassName: ""
+    # Node selector for assignment
+    nodeSelector: {}
+    # Affinity rules for  scheduling
+    affinity: {}
+    # Tolerations for scheduling
+    tolerations: []
   ids:
     # Enable internally managed PostgreSQL for IDs
     enabled: false
     name: postgres-ids
     image: postgres:17-alpine
+    # Pod annotations for PostgreSQL
+    podAnnotations: {}
     pvcSize: 1Gi
     # Enable backup cronjob of internal or external PostgreSQL database
     backup:
@@ -98,13 +134,30 @@ postgres:
       database: POSTGRESIDS_DATABASE
       user: POSTGRESIDS_USER
       password: POSTGRESIDS_PASSWORD
+    # Service configuration
+    service:
+      type: ClusterIP
+      annotations: {}
+    # Security context
+    podSecurityContext: {}
+    securityContext: {}
+    # Priority class name for scheduling
+    priorityClassName: ""
+    # Node selector for assignment
+    nodeSelector: {}
+    # Affinity rules for  scheduling
+    affinity: {}
+    # Tolerations for scheduling
+    tolerations: []
 
 # Opal configuration
 opal:
   # Container image configuration
   image: obiba/opal:5.3
   imagePullPolicy: Always
-  # Opal PVC size for persistent storage of configuration files and runtime work directory 
+  # Pod annotations for Opal
+  podAnnotations: {}
+  # Opal PVC size for persistent storage of configuration files and runtime work directory
   pvcSize: 1Gi
   # Java options
   javaOpts: "-Xms1G -Xmx2G -XX:+UseG1GC"
@@ -120,7 +173,7 @@ opal:
     existingSecret: ""  # Override global.existingSecret if needed
     secretKey: OPAL_ADMINISTRATOR_PASSWORD
   resources:
-    # Requested resources at pod start  
+    # Requested resources at pod start
     requests:
       memory: 1Gi
       cpu: "1"
@@ -128,6 +181,23 @@ opal:
     limits:
       memory: 2Gi
       cpu: "2"
+  # Service configuration
+  service:
+    # Service type (ClusterIP, NodePort, LoadBalancer)
+    type: ClusterIP
+    # Service annotations
+    annotations: {}
+  # Security context
+  podSecurityContext: {}
+  securityContext: {}
+  # Priority class name for pod scheduling
+  priorityClassName: ""
+  # Node selector for pod assignment
+  nodeSelector: {}
+  # Affinity rules for  scheduling
+  affinity: {}
+  # Tolerations for scheduling
+  tolerations: []
   rock:
     # Comma separated list of allowed Rock images
     imagesAllowed: ""

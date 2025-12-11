@@ -5,7 +5,12 @@ metadata:
   name: mongo
   labels:
     {{- include "mongo.labels" . | nindent 4 }}
+  {{- with .Values.mongo.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
+  type: {{ .Values.mongo.service.type | default "ClusterIP" }}
   ports:
     - port: 27017
   selector:
