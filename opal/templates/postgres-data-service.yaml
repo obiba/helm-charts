@@ -5,7 +5,12 @@ metadata:
   name: {{ .Values.postgres.data.name }}
   labels:
     {{- include "postgres.data.labels" . | nindent 4 }}
+  {{- with .Values.postgres.data.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
+  type: {{ .Values.postgres.data.service.type | default "ClusterIP" }}
   ports:
     - port: 5432
   selector:
