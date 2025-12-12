@@ -105,7 +105,7 @@ postgres:
     priorityClassName: ""
     # Node selector for assignment
     nodeSelector: {}
-    # Affinity rules for  scheduling
+    # Affinity rules for scheduling
     affinity: {}
     # Tolerations for scheduling
     tolerations: []
@@ -145,7 +145,7 @@ postgres:
     priorityClassName: ""
     # Node selector for assignment
     nodeSelector: {}
-    # Affinity rules for  scheduling
+    # Affinity rules for scheduling
     affinity: {}
     # Tolerations for scheduling
     tolerations: []
@@ -194,7 +194,7 @@ opal:
   priorityClassName: ""
   # Node selector for pod assignment
   nodeSelector: {}
-  # Affinity rules for  scheduling
+  # Affinity rules for scheduling
   affinity: {}
   # Tolerations for scheduling
   tolerations: []
