@@ -153,7 +153,7 @@ postgres:
 # Opal configuration
 opal:
   # Container image configuration
-  image: obiba/opal:5.3
+  image: obiba/opal:5.4
   imagePullPolicy: Always
   # Pod annotations for Opal
   podAnnotations: {}

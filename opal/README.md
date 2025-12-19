@@ -60,6 +60,14 @@ helm install myopal obiba/opal
 | `mongo.existingSecretKeys.database.ids` | Secret key for IDs database name | `MONGO_IDS` |
 | `mongo.existingSecretKeys.user` | Secret key for username | `MONGO_USER` |
 | `mongo.existingSecretKeys.password` | Secret key for password | `MONGO_PASSWORD` |
+| `mongo.service.type` | Service type (`ClusterIP`, `NodePort`, `LoadBalancer`) | `ClusterIP` |
+| `mongo.service.annotations` | Service annotations | `{}` |
+| `mongo.podSecurityContext` | Pod security context | `{}` |
+| `mongo.securityContext` | Container security context | `{}` |
+| `mongo.priorityClassName` | Priority class name for scheduling | `""` |
+| `mongo.nodeSelector` | Node selector for pod assignment | `{}` |
+| `mongo.affinity` | Affinity rules for scheduling | `{}` |
+| `mongo.tolerations` | Tolerations for scheduling | `[]` |
 
 ### PostgreSQL Configuration
 
@@ -89,6 +97,14 @@ helm install myopal obiba/opal
 | `postgres.data.existingSecretKeys.database` | Secret key for database name | `POSTGRESDATA_DATABASE` |
 | `postgres.data.existingSecretKeys.user` | Secret key for username | `POSTGRESDATA_USER` |
 | `postgres.data.existingSecretKeys.password` | Secret key for password | `POSTGRESDATA_PASSWORD` |
+| `postgres.data.service.type` | Service type (`ClusterIP`, `NodePort`, `LoadBalancer`) | `ClusterIP` |
+| `postgres.data.service.annotations` | Service annotations | `{}` |
+| `postgres.data.podSecurityContext` | Pod security context | `{}` |
+| `postgres.data.securityContext` | Container security context | `{}` |
+| `postgres.data.priorityClassName` | Priority class name for scheduling | `""` |
+| `postgres.data.nodeSelector` | Node selector for pod assignment | `{}` |
+| `postgres.data.affinity` | Affinity rules for scheduling | `{}` |
+| `postgres.data.tolerations` | Tolerations for scheduling | `[]` |
 
 #### PostgreSQL IDs Database
 
@@ -111,6 +127,14 @@ helm install myopal obiba/opal
 | `postgres.ids.existingSecretKeys.database` | Secret key for database name | `POSTGRESIDS_DATABASE` |
 | `postgres.ids.existingSecretKeys.user` | Secret key for username | `POSTGRESIDS_USER` |
 | `postgres.ids.existingSecretKeys.password` | Secret key for password | `POSTGRESIDS_PASSWORD` |
+| `postgres.ids.service.type` | Service type (`ClusterIP`, `NodePort`, `LoadBalancer`) | `ClusterIP` |
+| `postgres.ids.service.annotations` | Service annotations | `{}` |
+| `postgres.ids.podSecurityContext` | Pod security context | `{}` |
+| `postgres.ids.securityContext` | Container security context | `{}` |
+| `postgres.ids.priorityClassName` | Priority class name for scheduling | `""` |
+| `postgres.ids.nodeSelector` | Node selector for pod assignment | `{}` |
+| `postgres.ids.affinity` | Affinity rules for scheduling | `{}` |
+| `postgres.ids.tolerations` | Tolerations for scheduling | `[]` |
 
 ### Opal Configuration
 
@@ -124,6 +148,14 @@ helm install myopal obiba/opal
 | `opal.backup.schedule` | Backup schedule (cron format) | `"0 3 * * *"` |
 | `opal.backup.pvcSize` | Storage size for backup PVC | `2Gi` |
 | `opal.backup.limit` | Number of backup archives to keep | `10` |
+| `opal.service.type` | Service type (`ClusterIP`, `NodePort`, `LoadBalancer`) | `ClusterIP` |
+| `opal.service.annotations` | Service annotations | `{}` |
+| `opal.podSecurityContext` | Pod security context | `{}` |
+| `opal.securityContext` | Container security context | `{}` |
+| `opal.priorityClassName` | Priority class name for pod scheduling | `""` |
+| `opal.nodeSelector` | Node selector for pod assignment | `{}` |
+| `opal.affinity` | Affinity rules for scheduling | `{}` |
+| `opal.tolerations` | Tolerations for scheduling | `[]` |
 
 #### Opal Admin Password
 
@@ -307,6 +339,42 @@ postgres:
     pvcSize: 5Gi
     backup:
       pvcSize: 10Gi
+```
+
+### Opal Service & Scheduling
+
+Note: Opal is deployed as a single-pod StatefulSet; replica-spreading settings (anti-affinity, topology spread) do not apply. Use nodeSelector/tolerations to steer placement and security contexts to harden the pod.
+
+```yaml
+opal:
+  service:
+    type: NodePort
+    annotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "8080"
+
+  priorityClassName: "high-priority"
+
+  nodeSelector:
+    kubernetes.io/os: linux
+    node-type: general-purpose
+
+  tolerations:
+    - key: "dedicated"
+      operator: "Equal"
+      value: "opal"
+      effect: "NoSchedule"
+
+  podSecurityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+
+  securityContext:
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: ["ALL"]
 ```
 
 ### Rock Pod Configuration with Labels, Node Selection and Tolerations
