@@ -140,10 +140,12 @@ helm install myopal obiba/opal
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `opal.image` | Opal container image | `obiba/opal:5.2` |
+| `opal.image` | Opal container image | `obiba/opal:6.0` |
 | `opal.imagePullPolicy` | Image pull policy | `Always` |
 | `opal.pvcSize` | Storage size for Opal PVC | `1Gi` |
 | `opal.javaOpts` | Java options for Opal | `"-Xms1G -Xmx2G -XX:+UseG1GC"` |
+| `opal.extraEnv` | Extra environment variables for the Opal container (list of env entries) | `[]` |
+| `opal.envFrom` | Extra environment sources for the Opal container (list of envFrom entries) | `[]` |
 | `opal.backup.enabled` | Enable Opal files backup cronjob | `false` |
 | `opal.backup.schedule` | Backup schedule (cron format) | `"0 3 * * *"` |
 | `opal.backup.pvcSize` | Storage size for backup PVC | `2Gi` |
@@ -164,6 +166,25 @@ helm install myopal obiba/opal
 | `opal.adminPassword.password` | Opal administrator password | `password` |
 | `opal.adminPassword.existingSecret` | Name of existing secret for admin password (overrides global.existingSecret) | `""` |
 | `opal.adminPassword.secretKey` | Secret key for admin password | `OPAL_ADMINISTRATOR_PASSWORD` |
+
+#### OpenTelemetry
+
+Opal 6.0.0 and later export the logs, the DataSHIELD session traces and the DataSHIELD metrics over OTLP. Setting an endpoint turns on all three; left disabled, no `OTEL_` variable is set and Opal builds no SDK. See the [example](#exporting-to-opentelemetry) below.
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `opal.otel.enabled` | Enable the OpenTelemetry export | `false` |
+| `opal.otel.endpoint` | OTLP/HTTP endpoint of the collector (http/protobuf, port 4318 on a standard collector) | `"http://otel-collector:4318"` |
+| `opal.otel.serviceName` | Name reported to the backend | `"opal"` |
+| `opal.otel.resourceAttributes` | Extra resource attributes, e.g. `deployment.environment=production` | `""` |
+| `opal.otel.metricExportInterval` | Metrics export interval in milliseconds (SDK default 60000) | `""` |
+| `opal.otel.headers` | Headers sent with every request; use `existingSecret` for a token | `""` |
+| `opal.otel.existingSecret` | Existing secret holding the headers (not defaulted from `global.existingSecret`) | `""` |
+| `opal.otel.existingSecretKeys.headers` | Secret key for the headers | `OTEL_EXPORTER_OTLP_HEADERS` |
+| `opal.otel.tls.existingSecret` | Existing secret with the collector's TLS material, mounted as files | `""` |
+| `opal.otel.tls.existingSecretKeys.ca` | Secret key of the trusted CA certificate | `ca.crt` |
+| `opal.otel.tls.existingSecretKeys.clientCertificate` | Secret key of the client certificate, for mTLS | `""` |
+| `opal.otel.tls.existingSecretKeys.clientKey` | Secret key of the client key, for mTLS | `""` |
 
 #### Opal Pod Resources
 
@@ -321,6 +342,51 @@ opal:
     schedule: "0 4 * * *"  # Daily at 4 AM
     pvcSize: 2Gi
 ```
+
+### Exporting to OpenTelemetry
+
+The DataSHIELD stream carries the submitted R expressions, the usernames and the client addresses: it is the security audit trail, and unlike `datashield.log` it leaves the pod. Point it at a collector inside your trust boundary, over `https://`, with the token in a secret:
+
+```yaml
+opal:
+  otel:
+    enabled: true
+    endpoint: "https://collector.example.org:4318"
+    resourceAttributes: "deployment.environment=production,service.namespace=my-node"
+    # kubectl create secret generic otel-credentials \
+    #   --from-literal=OTEL_EXPORTER_OTLP_HEADERS='Authorization=Bearer%20...'
+    existingSecret: otel-credentials
+    # kubectl create secret generic otel-tls --from-file=ca.crt=ca.pem
+    tls:
+      existingSecret: otel-tls
+```
+
+A plaintext `http://` endpoint is only defensible on localhost, i.e. against a collector sidecar in the Opal pod. Any `OTEL_` variable the chart does not model goes through `opal.extraEnv`:
+
+```yaml
+opal:
+  extraEnv:
+    - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+      value: "https://tempo.example.org:4318/v1/traces"
+```
+
+What arrives at the collector: the audit records on scope `datashield.user` with the `ds_*` fields under their OpenTelemetry names (`datashield.session.id`, `datashield.action`, `datashield.script`, `enduser.id`, `client.address`); one trace per DataSHIELD session, rooted on a `datashield.session` span with the operations underneath it and a refused script as a `datashield.parse` span in status `ERROR`; and the `datashield.operation.count`, `datashield.operation.duration`, `datashield.session.active` and `datashield.quota.rejection` metrics. Opal prints `OpenTelemetry export enabled.` at startup when it picks the endpoint up.
+
+**Upgrading a release from a 5.x chart.** Opal seeds `conf/` into the PVC on the first run only, so a volume created by Opal 5 keeps a `logback.xml` with no OpenTelemetry appenders in it: enable the export on such a release and it sends its traces and metrics and not one log record. Opal says so at startup:
+
+```
+OpenTelemetry export enabled.
+WARNING: conf/logback.xml declares no OpenTelemetry appender, so no log record will be exported ...
+```
+
+If you never edited that file, replace it with the image's copy:
+
+```
+kubectl exec opal-0 -- cp /usr/share/opal/conf/logback.xml /srv/conf/logback.xml
+kubectl rollout restart statefulset/opal
+```
+
+Otherwise merge the `otel`, `otelrest`, `otelraw` and `otelds` appenders, and the `appender-ref` entries that use them, from the image's file into yours.
 
 ### Custom Storage Classes
 

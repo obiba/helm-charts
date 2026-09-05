@@ -153,7 +153,7 @@ postgres:
 # Opal configuration
 opal:
   # Container image configuration
-  image: obiba/opal:5.4
+  image: obiba/opal:6.0
   imagePullPolicy: Always
   # Pod annotations for Opal
   podAnnotations: {}
@@ -161,6 +161,47 @@ opal:
   pvcSize: 1Gi
   # Java options
   javaOpts: "-Xms1G -Xmx2G -XX:+UseG1GC"
+  # Extra environment variables for the Opal container, as a list of env entries
+  # (name/value or name/valueFrom), e.g. an OTEL_ variable not covered below.
+  extraEnv: []
+  # Extra environment sources for the Opal container, as a list of envFrom entries
+  # (configMapRef or secretRef).
+  envFrom: []
+  # OpenTelemetry export (Opal 6.0.0 and later). Setting an endpoint is all it takes: it turns on
+  # the log export, the DataSHIELD session traces and the DataSHIELD metrics together. Left disabled,
+  # no OTEL_ variable is set and Opal builds no SDK, opens no connection and sends nothing.
+  #
+  # The DataSHIELD stream carries the submitted R expressions, the usernames and the client
+  # addresses: point it at a collector inside your trust boundary, over https, or at a collector
+  # sidecar on localhost.
+  otel:
+    enabled: false
+    # OTLP/HTTP endpoint of the collector. Opal ships the http/protobuf sender only, so this is
+    # port 4318 on a standard collector, not the 4317 gRPC port.
+    endpoint: "http://otel-collector:4318"
+    # Name reported to the backend
+    serviceName: "opal"
+    # Extra resource attributes, e.g. to tell nodes apart in a federated study:
+    # "deployment.environment=production,service.namespace=my-node"
+    resourceAttributes: ""
+    # Metrics export interval in milliseconds; the SDK default is 60000
+    metricExportInterval: ""
+    # Headers sent with every request, e.g. "Authorization=Bearer%20...". A token does not belong
+    # in a values file: put it in a secret and name it below instead.
+    headers: ""
+    # Existing secret holding the headers. Deliberately not defaulted from global.existingSecret,
+    # since a missing key would keep the pod from starting.
+    existingSecret: ""
+    existingSecretKeys:
+      headers: OTEL_EXPORTER_OTLP_HEADERS
+    # TLS material for the collector, from an existing secret mounted as files: the trusted CA
+    # and, for mTLS, the client certificate and key. Leave a key empty to not set it.
+    tls:
+      existingSecret: ""
+      existingSecretKeys:
+        ca: ca.crt
+        clientCertificate: ""
+        clientKey: ""
   # Enable backup cronjob of Opal files
   backup:
     enabled: false
