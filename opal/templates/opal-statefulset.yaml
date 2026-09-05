@@ -182,6 +182,54 @@ spec:
             - name: ROCK_POD_SPECS
               value: {{ .Values.opal.rock.specs | toJson | quote }}
           {{- end }}
+          # OpenTelemetry: nothing is set unless enabled, which is what keeps Opal's export off
+          {{- if .Values.opal.otel.enabled }}
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: {{ required "opal.otel.endpoint is required when opal.otel.enabled" .Values.opal.otel.endpoint | quote }}
+          {{- with .Values.opal.otel.serviceName }}
+            - name: OTEL_SERVICE_NAME
+              value: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.opal.otel.resourceAttributes }}
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.opal.otel.metricExportInterval }}
+            - name: OTEL_METRIC_EXPORT_INTERVAL
+              value: {{ . | quote }}
+          {{- end }}
+          {{- if .Values.opal.otel.existingSecret }}
+            - name: OTEL_EXPORTER_OTLP_HEADERS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.opal.otel.existingSecret }}
+                  key: {{ .Values.opal.otel.existingSecretKeys.headers }}
+          {{- else if .Values.opal.otel.headers }}
+            - name: OTEL_EXPORTER_OTLP_HEADERS
+              value: {{ .Values.opal.otel.headers | quote }}
+          {{- end }}
+          {{- if .Values.opal.otel.tls.existingSecret }}
+          {{- with .Values.opal.otel.tls.existingSecretKeys.ca }}
+            - name: OTEL_EXPORTER_OTLP_CERTIFICATE
+              value: /etc/opal/otel-tls/{{ . }}
+          {{- end }}
+          {{- with .Values.opal.otel.tls.existingSecretKeys.clientCertificate }}
+            - name: OTEL_EXPORTER_OTLP_CLIENT_CERTIFICATE
+              value: /etc/opal/otel-tls/{{ . }}
+          {{- end }}
+          {{- with .Values.opal.otel.tls.existingSecretKeys.clientKey }}
+            - name: OTEL_EXPORTER_OTLP_CLIENT_KEY
+              value: /etc/opal/otel-tls/{{ . }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.opal.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.opal.envFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           livenessProbe:
             tcpSocket:
               port: {{ .Values.opal.port | default "8080" }}
@@ -195,6 +243,11 @@ spec:
           volumeMounts:
             - name: opal-storage
               mountPath: /srv
+          {{- if and .Values.opal.otel.enabled .Values.opal.otel.tls.existingSecret }}
+            - name: otel-tls
+              mountPath: /etc/opal/otel-tls
+              readOnly: true
+          {{- end }}
           resources:
             requests:
               memory: {{ .Values.opal.resources.requests.memory | default "1Gi" }}
@@ -202,6 +255,12 @@ spec:
             limits:
               memory: {{ .Values.opal.resources.limits.memory | default "2Gi" }}
               cpu: {{ .Values.opal.resources.limits.cpu | default "2" }}
+      {{- if and .Values.opal.otel.enabled .Values.opal.otel.tls.existingSecret }}
+      volumes:
+        - name: otel-tls
+          secret:
+            secretName: {{ .Values.opal.otel.tls.existingSecret }}
+      {{- end }}
   volumeClaimTemplates:
     - metadata:
         name: opal-storage
