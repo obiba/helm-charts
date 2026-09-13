@@ -353,6 +353,18 @@ postgres:
     existingSecret: postgres-credentials
 ```
 
+### Standalone Opal (No Database)
+
+Opal 6.0.0 and later need no database to run: the configuration lives in an embedded H2 database on the Opal volume. Turning the default MongoDB off gives a single-pod deployment, with the same ServiceAccount, Role and Service:
+
+```yaml
+useMongo: false
+mongo:
+  enabled: false
+```
+
+The first run registers no database, so projects can hold views, files and R/DataSHIELD sessions but no imported tables until a data database is registered in the administration pages. `opal.backup` covers the whole configuration in this setup, since everything is on the volume.
+
 ### Opal Configuration on PostgreSQL
 
 Opal 6.0.0 and later keep the configuration (projects, permissions, users, registered databases, DataSHIELD profiles...) in an embedded H2 database under `data/config` on the Opal volume. `usePostgres.config` moves it to a PostgreSQL server, here an internally managed one with its own backup:
