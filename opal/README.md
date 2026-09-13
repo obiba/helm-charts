@@ -8,7 +8,9 @@ Opal deployment, with Rock spawner capability (on-demand R server management). D
 
 Default database is an internally managed MongoDB instance. It is also possible to configure an externally managed one. A single instance of MongoDB server can contain both the databases of the Opal and of the Opal IDs. The later one is optional.
 
-Other databases (PostgreSQL for instance) can also be internally/externally managed. There will be one PostgrSQL server per database, i.e. the Opal data and the Opal IDs. The later one is optional.
+Other databases (PostgreSQL for instance) can also be internally/externally managed. There will be one PostgreSQL server per database, i.e. the Opal data and the Opal IDs. The later one is optional.
+
+Since Opal 6.0.0, Opal keeps its own configuration (projects, permissions, users, registered databases, DataSHIELD profiles...) in an embedded H2 database on its volume. It can be kept on a PostgreSQL server instead, internally or externally managed: see [Opal configuration on PostgreSQL](#opal-configuration-on-postgresql).
 
 For each of these databases (internal/external Mongodb/PostgreSQL), a backup cron job can be enabled.
 
@@ -73,8 +75,39 @@ helm install myopal obiba/opal
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
+| `usePostgres.config` | Keep Opal's own configuration on PostgreSQL instead of the embedded H2 database (Opal 6.0.0 and later). Decide before the first start, see the [example](#opal-configuration-on-postgresql). | `false` |
 | `usePostgres.data` | Apply PostgreSQL data configuration to Opal | `false` |
 | `usePostgres.ids` | Apply PostgreSQL IDs configuration to Opal | `false` |
+
+#### PostgreSQL Configuration Database
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `postgres.config.enabled` | Enable internally managed PostgreSQL for Opal's configuration | `false` |
+| `postgres.config.name` | PostgreSQL StatefulSet name | `postgres-config` |
+| `postgres.config.image` | PostgreSQL container image | `postgres:17-alpine` |
+| `postgres.config.pvcSize` | Storage size for PostgreSQL PVC | `1Gi` |
+| `postgres.config.backup.enabled` | Enable PostgreSQL backup cronjob | `false` |
+| `postgres.config.backup.schedule` | Backup schedule (cron format) | `"0 2 * * *"` |
+| `postgres.config.backup.pvcSize` | Storage size for backup PVC | `2Gi` |
+| `postgres.config.backup.limit` | Number of backup archives to keep | `10` |
+| `postgres.config.host` | PostgreSQL host (internal or external) | `postgres-config` |
+| `postgres.config.port` | PostgreSQL port | `"5432"` |
+| `postgres.config.database` | PostgreSQL database name: an existing, empty database, Opal creates the schema itself | `opal_config` |
+| `postgres.config.user` | PostgreSQL username | `opal` |
+| `postgres.config.password` | PostgreSQL password (required: the chart refuses to render without one) | `example` |
+| `postgres.config.existingSecret` | Name of existing secret for PostgreSQL credentials (overrides global.existingSecret) | `""` |
+| `postgres.config.existingSecretKeys.database` | Secret key for database name | `POSTGRESCONFIG_DATABASE` |
+| `postgres.config.existingSecretKeys.user` | Secret key for username | `POSTGRESCONFIG_USER` |
+| `postgres.config.existingSecretKeys.password` | Secret key for password | `POSTGRESCONFIG_PASSWORD` |
+| `postgres.config.service.type` | Service type (`ClusterIP`, `NodePort`, `LoadBalancer`) | `ClusterIP` |
+| `postgres.config.service.annotations` | Service annotations | `{}` |
+| `postgres.config.podSecurityContext` | Pod security context | `{}` |
+| `postgres.config.securityContext` | Container security context | `{}` |
+| `postgres.config.priorityClassName` | Priority class name for scheduling | `""` |
+| `postgres.config.nodeSelector` | Node selector for pod assignment | `{}` |
+| `postgres.config.affinity` | Affinity rules for scheduling | `{}` |
+| `postgres.config.tolerations` | Tolerations for scheduling | `[]` |
 
 #### PostgreSQL Data Database
 
@@ -319,6 +352,49 @@ postgres:
     user: opal_user
     existingSecret: postgres-credentials
 ```
+
+### Opal Configuration on PostgreSQL
+
+Opal 6.0.0 and later keep the configuration (projects, permissions, users, registered databases, DataSHIELD profiles...) in an embedded H2 database under `data/config` on the Opal volume. `usePostgres.config` moves it to a PostgreSQL server, here an internally managed one with its own backup:
+
+```yaml
+usePostgres:
+  config: true
+postgres:
+  config:
+    enabled: true
+    backup:
+      enabled: true
+
+opal:
+  backup:
+    enabled: true
+```
+
+Or an external one, with an existing, empty database and the credentials in a secret:
+
+```yaml
+usePostgres:
+  config: true
+postgres:
+  config:
+    enabled: false
+    host: postgres.example.com
+    port: "5432"
+    database: opal_config
+    # kubectl create secret generic postgres-config-credentials \
+    #   --from-literal=POSTGRESCONFIG_DATABASE=opal_config \
+    #   --from-literal=POSTGRESCONFIG_USER=opal \
+    #   --from-literal=POSTGRESCONFIG_PASSWORD=...
+    existingSecret: postgres-config-credentials
+```
+
+The Opal image writes the connection to `conf/opal-config.properties` at every start and waits for the port to answer before starting Opal, so an internal server coming up at the same time is fine. Two things to know:
+
+- **Decide before the first start.** Opal writes its configuration to whatever database is configured at that moment. Turning `usePostgres.config` on for a release that already has a configuration on its volume gives an Opal with an empty configuration: no administrator password set, no databases registered, no projects. The first-run markers on the volume are not reset, so the first-run setup does not run again either.
+- **Back it up together with the Opal volume.** On PostgreSQL the configuration is in the server, while the secret key that salts its user passwords and encrypts its stored credentials is still in `data/opal-config.xml` on the volume: a restore needs `postgres.config.backup` and `opal.backup` from the same moment.
+
+The data and IDs databases (`useMongo`, `usePostgres.data`, `usePostgres.ids`) are unchanged: they hold the data and the identifiers, and are registered in the configuration through Opal's REST API on the first run.
 
 ### Enabling Backups
 

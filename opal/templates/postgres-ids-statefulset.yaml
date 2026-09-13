@@ -105,5 +105,5 @@ spec:
         {{- end }}
         resources:
           requests:
-            storage: {{ .Values.postgres.data.pvcSize | default "1Gi" }}
+            storage: {{ .Values.postgres.ids.pvcSize | default "1Gi" }}
 {{- end }}
