@@ -355,7 +355,7 @@ postgres:
 
 ### Standalone Opal (No Database)
 
-Opal 6.0.0 and later need no database to run: the configuration lives in an embedded H2 database on the Opal volume. Turning the default MongoDB off gives a single-pod deployment, with the same ServiceAccount, Role and Service:
+Opal 6.0.0 and later need no external database: the configuration lives in an embedded H2 database on the Opal volume, and a project can store its data in an H2 database of its own, on the same volume. Turning the default MongoDB off gives a fully featured single-pod Opal, with the same ServiceAccount, Role and Service:
 
 ```yaml
 useMongo: false
@@ -363,7 +363,7 @@ mongo:
   enabled: false
 ```
 
-The first run registers no database, so projects can hold views, files and R/DataSHIELD sessions but no imported tables until a data database is registered in the administration pages. `opal.backup` covers the whole configuration in this setup, since everything is on the volume.
+Data import, views, R and DataSHIELD all work as usual. Since everything is on the volume, `opal.backup` covers the configuration and the data together; size `opal.pvcSize` for the data.
 
 ### Opal Configuration on PostgreSQL
 
