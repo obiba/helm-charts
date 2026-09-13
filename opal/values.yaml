@@ -64,11 +64,60 @@ mongo:
 
 # PostgreSQL setup: apply PostgreSQL configuration to Opal
 usePostgres:
+  # Opal's own configuration (projects, permissions, users, registered databases...) on PostgreSQL
+  # instead of the embedded H2 database (Opal 6.0.0 and later). Decide before the first start: Opal
+  # writes its configuration to whatever is configured at that moment, and switching a release
+  # that already has one leaves it with an empty configuration.
+  config: false
   data: false
   ids: false
 
 # PostgreSQL configuration
 postgres:
+  config:
+    # Enable internally managed PostgreSQL for Opal's configuration
+    enabled: false
+    name: postgres-config
+    image: postgres:17-alpine
+    # Pod annotations for PostgreSQL
+    podAnnotations: {}
+    pvcSize: 1Gi
+    # Enable backup cronjob of internal or external PostgreSQL database. The configuration is only
+    # half of it: the secret key that salts the user passwords and encrypts the stored credentials
+    # stays in data/opal-config.xml on the Opal volume, so pair it with opal.backup.
+    backup:
+      enabled: false
+      schedule: "0 2 * * *" # This schedule runs the job daily at 2 AM.
+      pvcSize: 2Gi
+      limit: 10 # Number of backups to keep
+    # PostgreSQL connection details (internal or external)
+    host: postgres-config
+    port: "5432"
+    # An existing, empty database: Opal creates the schema itself
+    database: opal_config
+    user: opal
+    # Required: Opal cannot connect to an external configuration database without one
+    password: example
+    existingSecret: ""  # Override global.existingSecret if needed
+    existingSecretKeys:
+      database: POSTGRESCONFIG_DATABASE
+      user: POSTGRESCONFIG_USER
+      password: POSTGRESCONFIG_PASSWORD
+    # Service configuration
+    service:
+      type: ClusterIP
+      annotations: {}
+    # Security context
+    podSecurityContext: {}
+    securityContext: {}
+    # Priority class name for scheduling
+    priorityClassName: ""
+    # Node selector for assignment
+    nodeSelector: {}
+    # Affinity rules for scheduling
+    affinity: {}
+    # Tolerations for scheduling
+    tolerations: []
   data:
     # Enable internally managed PostgreSQL for data
     enabled: false

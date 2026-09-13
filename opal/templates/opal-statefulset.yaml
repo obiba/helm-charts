@@ -61,6 +61,41 @@ spec:
           {{- else }}
               value: {{ .Values.opal.adminPassword.password | quote }}
           {{- end }}
+          # Postgres config: Opal's own configuration on PostgreSQL instead of the embedded H2 database.
+          # The image requires the password, so an empty one fails here rather than in the pod.
+          {{- if .Values.usePostgres.config }}
+            - name: POSTGRESCONFIG_HOST
+              value: {{ .Values.postgres.config.host | default "postgres-config" }}
+            - name: POSTGRESCONFIG_PORT
+              value: "{{ .Values.postgres.config.port }}"
+            - name: POSTGRESCONFIG_USER
+          {{- if or .Values.postgres.config.existingSecret .Values.global.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.config.existingSecret | default .Values.global.existingSecret }}
+                  key: {{ .Values.postgres.config.existingSecretKeys.user }}
+          {{- else }}
+              value: {{ .Values.postgres.config.user | quote }}
+          {{- end }}
+            - name: POSTGRESCONFIG_PASSWORD
+          {{- if or .Values.postgres.config.existingSecret .Values.global.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.config.existingSecret | default .Values.global.existingSecret }}
+                  key: {{ .Values.postgres.config.existingSecretKeys.password }}
+          {{- else }}
+              value: {{ required "postgres.config.password is required when usePostgres.config" .Values.postgres.config.password | quote }}
+          {{- end }}
+            - name: POSTGRESCONFIG_DATABASE
+          {{- if or .Values.postgres.config.existingSecret .Values.global.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.config.existingSecret | default .Values.global.existingSecret }}
+                  key: {{ .Values.postgres.config.existingSecretKeys.database }}
+          {{- else }}
+              value: {{ .Values.postgres.config.database | quote }}
+          {{- end }}
+          {{- end }}
           # Postgres data
           {{- if .Values.usePostgres.data }}
             - name: POSTGRESDATA_HOST

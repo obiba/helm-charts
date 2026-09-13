@@ -66,6 +66,23 @@ app.kubernetes.io/component: mongo-dump
 app.kubernetes.io/component: mongo-dump-pvc
 {{- end -}}
 
+{{- define "postgres.config.labels" -}}
+{{ include "obiba.labels" . }}
+app.kubernetes.io/component: postgres-config
+{{- end -}}
+{{- define "postgres.config.pvc.labels" -}}
+{{ include "obiba.labels" . }}
+app.kubernetes.io/component: postgres-config-pvc
+{{- end -}}
+{{- define "postgres.config.dump.labels" -}}
+{{ include "obiba.labels" . }}
+app.kubernetes.io/component: postgres-config-dump
+{{- end -}}
+{{- define "postgres.config.dump.pvc.labels" -}}
+{{ include "obiba.labels" . }}
+app.kubernetes.io/component: postgres-config-dump-pvc
+{{- end -}}
+
 {{- define "postgres.data.labels" -}}
 {{ include "obiba.labels" . }}
 app.kubernetes.io/component: postgres-data
@@ -110,6 +127,10 @@ app.kubernetes.io/component: opal
 {{- define "mongo.selectorLabels" -}}
 {{ include "obiba.selectorLabels" . }}
 app.kubernetes.io/component: mongo
+{{- end }}
+{{- define "postgres.config.selectorLabels" -}}
+{{ include "obiba.selectorLabels" . }}
+app.kubernetes.io/component: postgres-config
 {{- end }}
 {{- define "postgres.data.selectorLabels" -}}
 {{ include "obiba.selectorLabels" . }}
