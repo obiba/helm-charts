@@ -37,7 +37,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/component: opal
 {{- end -}}
 {{- define "opal.pvc.labels" -}}
-{{ include "obiba.labels" . }}
+{{ include "obiba.selectorLabels" . }}
 app.kubernetes.io/component: opal-pvc
 {{- end -}}
 {{- define "opal.backup.labels" -}}
@@ -54,7 +54,7 @@ app.kubernetes.io/component: opal-backup-pvc
 app.kubernetes.io/component: mongo
 {{- end -}}
 {{- define "mongo.pvc.labels" -}}
-{{ include "obiba.labels" . }}
+{{ include "obiba.selectorLabels" . }}
 app.kubernetes.io/component: mongo-pvc
 {{- end -}}
 {{- define "mongo.dump.labels" -}}
@@ -71,7 +71,7 @@ app.kubernetes.io/component: mongo-dump-pvc
 app.kubernetes.io/component: postgres-data
 {{- end -}}
 {{- define "postgres.data.pvc.labels" -}}
-{{ include "obiba.labels" . }}
+{{ include "obiba.selectorLabels" . }}
 app.kubernetes.io/component: postgres-data-pvc
 {{- end -}}
 {{- define "postgres.data.dump.labels" -}}
@@ -88,7 +88,7 @@ app.kubernetes.io/component: postgres-data-dump-pvc
 app.kubernetes.io/component: postgres-ids
 {{- end -}}
 {{- define "postgres.ids.pvc.labels" -}}
-{{ include "obiba.labels" . }}
+{{ include "obiba.selectorLabels" . }}
 app.kubernetes.io/component: postgres-ids-pvc
 {{- end -}}
 {{- define "postgres.ids.dump.labels" -}}
