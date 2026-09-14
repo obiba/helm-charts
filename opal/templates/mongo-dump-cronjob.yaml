@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "mongo.dump.labels" . | nindent 4 }}
 spec:
-  schedule: {{ .Values.mongo.backup.schedule }}
+  schedule: {{ .Values.mongo.backup.schedule | quote }}
   jobTemplate:
     spec:
       template:

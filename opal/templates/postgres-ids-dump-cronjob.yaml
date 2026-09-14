@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "postgres.ids.dump.labels" . | nindent 4 }}
 spec:
-  schedule: {{ .Values.postgres.ids.backup.schedule }}
+  schedule: {{ .Values.postgres.ids.backup.schedule | quote }}
   jobTemplate:
     spec:
       template:
@@ -40,11 +40,11 @@ spec:
               command: ["/bin/sh", "-c"]
               args:
                 - |
+                  set -e -o pipefail
                   BACKUP_DATE=$(date +%F_%H%M%S)
                   echo "Starting PostgreSQL IDs backup for date: $BACKUP_DATE"
                   
-                  echo "*:*:*:${POSTGRES_USER}:${POSTGRES_PASSWORD}" > ~/.pgpass
-                  chmod 600 ~/.pgpass
+                  export PGPASSWORD="${POSTGRES_PASSWORD}"
                   pg_dumpall -h ${POSTGRES_HOST} -p ${POSTGRES_PORT} -U ${POSTGRES_USER} \
                     | gzip -4 > /dump/postgres-ids-$BACKUP_DATE.sql.gz
                   

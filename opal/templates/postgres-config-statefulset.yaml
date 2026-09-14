@@ -86,7 +86,7 @@ spec:
               command:
                 - pg_isready
                 - -U
-                - $POSTGRES_USER
+                - $(POSTGRES_USER)
             initialDelaySeconds: 5
             periodSeconds: 10
           volumeMounts:

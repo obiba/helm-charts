@@ -12,7 +12,8 @@ metadata:
 spec:
   type: {{ .Values.postgres.config.service.type | default "ClusterIP" }}
   ports:
-    - port: 5432
+    - port: {{ .Values.postgres.config.port | default "5432" }}
+      targetPort: 5432
   selector:
     {{- include "postgres.config.selectorLabels" . | nindent 4 }}
 {{- end }}

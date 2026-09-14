@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "postgres.config.dump.labels" . | nindent 4 }}
 spec:
-  schedule: {{ .Values.postgres.config.backup.schedule }}
+  schedule: {{ .Values.postgres.config.backup.schedule | quote }}
   jobTemplate:
     spec:
       template:
@@ -40,11 +40,11 @@ spec:
               command: ["/bin/sh", "-c"]
               args:
                 - |
+                  set -e -o pipefail
                   BACKUP_DATE=$(date +%F_%H%M%S)
                   echo "Starting PostgreSQL config backup for date: $BACKUP_DATE"
                   
-                  echo "*:*:*:${POSTGRES_USER}:${POSTGRES_PASSWORD}" > ~/.pgpass
-                  chmod 600 ~/.pgpass
+                  export PGPASSWORD="${POSTGRES_PASSWORD}"
                   pg_dumpall -h ${POSTGRES_HOST} -p ${POSTGRES_PORT} -U ${POSTGRES_USER} \
                     | gzip -4 > /dump/postgres-config-$BACKUP_DATE.sql.gz
                   

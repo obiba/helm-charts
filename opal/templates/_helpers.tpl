@@ -71,7 +71,7 @@ app.kubernetes.io/component: mongo-dump-pvc
 app.kubernetes.io/component: postgres-config
 {{- end -}}
 {{- define "postgres.config.pvc.labels" -}}
-{{ include "obiba.labels" . }}
+{{ include "obiba.selectorLabels" . }}
 app.kubernetes.io/component: postgres-config-pvc
 {{- end -}}
 {{- define "postgres.config.dump.labels" -}}
