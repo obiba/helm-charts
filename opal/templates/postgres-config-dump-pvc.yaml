@@ -1,0 +1,17 @@
+{{- if .Values.postgres.config.backup.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ printf "%s-dump-pvc" .Values.postgres.config.name }}
+  labels:
+    {{- include "postgres.config.dump.pvc.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  {{- if .Values.global.storageClassName }}
+  storageClassName: {{ .Values.global.storageClassName }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.postgres.config.backup.pvcSize | default "2Gi" }}
+{{- end }}

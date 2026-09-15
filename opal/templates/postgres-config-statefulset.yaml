@@ -1,0 +1,109 @@
+{{- if .Values.postgres.config.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.postgres.config.name }}
+  labels:
+    {{- include "postgres.config.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ .Values.postgres.config.name }}
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "postgres.config.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "postgres.config.selectorLabels" . | nindent 8 }}
+      {{- with .Values.postgres.config.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- with .Values.postgres.config.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.postgres.config.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      {{- with .Values.postgres.config.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.postgres.config.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.postgres.config.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: postgres
+          image: {{ .Values.postgres.config.image }}
+          {{- with .Values.postgres.config.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: {{ .Values.postgres.config.port | default "5432" }}
+          env:
+            - name: POSTGRES_USER
+          {{- if or .Values.postgres.config.existingSecret .Values.global.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.config.existingSecret | default .Values.global.existingSecret }}
+                  key: {{ .Values.postgres.config.existingSecretKeys.user }}
+          {{- else }}
+              value: {{ .Values.postgres.config.user | quote }}
+          {{- end }}
+            - name: POSTGRES_PASSWORD
+          {{- if or .Values.postgres.config.existingSecret .Values.global.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.config.existingSecret | default .Values.global.existingSecret }}
+                  key: {{ .Values.postgres.config.existingSecretKeys.password }}
+          {{- else }}
+              value: {{ .Values.postgres.config.password | quote }}
+          {{- end }}
+            - name: POSTGRES_DB
+          {{- if or .Values.postgres.config.existingSecret .Values.global.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.config.existingSecret | default .Values.global.existingSecret }}
+                  key: {{ .Values.postgres.config.existingSecretKeys.database }}
+          {{- else }}
+              value: {{ .Values.postgres.config.database | quote }}
+          {{- end }}
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.postgres.config.port | default "5432" }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - $(POSTGRES_USER)
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-storage
+        labels:
+          {{- include "postgres.config.pvc.labels" . | nindent 10 }}
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        {{- if .Values.global.storageClassName }}
+        storageClassName: {{ .Values.global.storageClassName }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.postgres.config.pvcSize | default "1Gi" }}
+{{- end }}
