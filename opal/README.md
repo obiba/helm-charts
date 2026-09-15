@@ -23,7 +23,7 @@ helm install myopal obiba/opal
 
 ### Upgrading
 
-See [upgrade_notes.md](upgrade_notes.md) before upgrading an existing release. In particular, upgrading from chart version 1.2.1 or lower to 1.3.0 requires a one-time manual step.
+See [UPGRADE.md](UPGRADE.md) before upgrading an existing release. In particular, upgrading from chart version 1.2.1 or lower to 1.3.0 requires a one-time manual step.
 
 ## Values
 
