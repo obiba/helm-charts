@@ -8,7 +8,9 @@ Opal deployment, with Rock spawner capability (on-demand R server management). D
 
 Default database is an internally managed MongoDB instance. It is also possible to configure an externally managed one. A single instance of MongoDB server can contain both the databases of the Opal and of the Opal IDs. The later one is optional.
 
-Other databases (PostgreSQL for instance) can also be internally/externally managed. There will be one PostgrSQL server per database, i.e. the Opal data and the Opal IDs. The later one is optional.
+Other databases (PostgreSQL for instance) can also be internally/externally managed. There will be one PostgreSQL server per database, i.e. the Opal data and the Opal IDs. The later one is optional.
+
+Since Opal 6.0.0, Opal keeps its own configuration (projects, permissions, users, registered databases, DataSHIELD profiles...) in an embedded H2 database on its volume. It can be kept on a PostgreSQL server instead, internally or externally managed: see [Opal configuration on PostgreSQL](#opal-configuration-on-postgresql).
 
 For each of these databases (internal/external Mongodb/PostgreSQL), a backup cron job can be enabled.
 
@@ -21,7 +23,7 @@ helm install myopal obiba/opal
 
 ### Upgrading
 
-See [upgrade_notes.md](upgrade_notes.md) before upgrading an existing release. In particular, upgrading from chart version 1.2.1 or lower to 1.3.0 requires a one-time manual step.
+See [UPGRADE.md](UPGRADE.md) before upgrading an existing release. In particular, upgrading from chart version 1.2.1 or lower to 1.3.0 requires a one-time manual step.
 
 ## Values
 
@@ -77,8 +79,39 @@ See [upgrade_notes.md](upgrade_notes.md) before upgrading an existing release. I
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
+| `usePostgres.config` | Keep Opal's own configuration on PostgreSQL instead of the embedded H2 database (Opal 6.0.0 and later). Decide before the first start, see the [example](#opal-configuration-on-postgresql). | `false` |
 | `usePostgres.data` | Apply PostgreSQL data configuration to Opal | `false` |
 | `usePostgres.ids` | Apply PostgreSQL IDs configuration to Opal | `false` |
+
+#### PostgreSQL Configuration Database
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `postgres.config.enabled` | Enable internally managed PostgreSQL for Opal's configuration | `false` |
+| `postgres.config.name` | PostgreSQL StatefulSet name | `postgres-config` |
+| `postgres.config.image` | PostgreSQL container image | `postgres:17-alpine` |
+| `postgres.config.pvcSize` | Storage size for PostgreSQL PVC | `1Gi` |
+| `postgres.config.backup.enabled` | Enable PostgreSQL backup cronjob | `false` |
+| `postgres.config.backup.schedule` | Backup schedule (cron format) | `"0 2 * * *"` |
+| `postgres.config.backup.pvcSize` | Storage size for backup PVC | `2Gi` |
+| `postgres.config.backup.limit` | Number of backup archives to keep | `10` |
+| `postgres.config.host` | PostgreSQL host (internal or external) | `postgres-config` |
+| `postgres.config.port` | PostgreSQL port | `"5432"` |
+| `postgres.config.database` | PostgreSQL database name: an existing, empty database, Opal creates the schema itself | `opal_config` |
+| `postgres.config.user` | PostgreSQL username | `opal` |
+| `postgres.config.password` | PostgreSQL password (required: the chart refuses to render without one) | `example` |
+| `postgres.config.existingSecret` | Name of existing secret for PostgreSQL credentials (overrides global.existingSecret) | `""` |
+| `postgres.config.existingSecretKeys.database` | Secret key for database name | `POSTGRESCONFIG_DATABASE` |
+| `postgres.config.existingSecretKeys.user` | Secret key for username | `POSTGRESCONFIG_USER` |
+| `postgres.config.existingSecretKeys.password` | Secret key for password | `POSTGRESCONFIG_PASSWORD` |
+| `postgres.config.service.type` | Service type (`ClusterIP`, `NodePort`, `LoadBalancer`) | `ClusterIP` |
+| `postgres.config.service.annotations` | Service annotations | `{}` |
+| `postgres.config.podSecurityContext` | Pod security context | `{}` |
+| `postgres.config.securityContext` | Container security context | `{}` |
+| `postgres.config.priorityClassName` | Priority class name for scheduling | `""` |
+| `postgres.config.nodeSelector` | Node selector for pod assignment | `{}` |
+| `postgres.config.affinity` | Affinity rules for scheduling | `{}` |
+| `postgres.config.tolerations` | Tolerations for scheduling | `[]` |
 
 #### PostgreSQL Data Database
 
@@ -144,10 +177,12 @@ See [upgrade_notes.md](upgrade_notes.md) before upgrading an existing release. I
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `opal.image` | Opal container image | `obiba/opal:5.2` |
+| `opal.image` | Opal container image | `obiba/opal:6.0` |
 | `opal.imagePullPolicy` | Image pull policy | `Always` |
 | `opal.pvcSize` | Storage size for Opal PVC | `1Gi` |
 | `opal.javaOpts` | Java options for Opal | `"-Xms1G -Xmx2G -XX:+UseG1GC"` |
+| `opal.extraEnv` | Extra environment variables for the Opal container (list of env entries) | `[]` |
+| `opal.envFrom` | Extra environment sources for the Opal container (list of envFrom entries) | `[]` |
 | `opal.backup.enabled` | Enable Opal files backup cronjob | `false` |
 | `opal.backup.schedule` | Backup schedule (cron format) | `"0 3 * * *"` |
 | `opal.backup.pvcSize` | Storage size for backup PVC | `2Gi` |
@@ -168,6 +203,25 @@ See [upgrade_notes.md](upgrade_notes.md) before upgrading an existing release. I
 | `opal.adminPassword.password` | Opal administrator password | `password` |
 | `opal.adminPassword.existingSecret` | Name of existing secret for admin password (overrides global.existingSecret) | `""` |
 | `opal.adminPassword.secretKey` | Secret key for admin password | `OPAL_ADMINISTRATOR_PASSWORD` |
+
+#### OpenTelemetry
+
+Opal 6.0.0 and later export the logs, the DataSHIELD session traces and the DataSHIELD metrics over OTLP. Setting an endpoint turns on all three; left disabled, no `OTEL_` variable is set and Opal builds no SDK. See the [example](#exporting-to-opentelemetry) below.
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `opal.otel.enabled` | Enable the OpenTelemetry export | `false` |
+| `opal.otel.endpoint` | OTLP/HTTP endpoint of the collector (http/protobuf, port 4318 on a standard collector) | `"http://otel-collector:4318"` |
+| `opal.otel.serviceName` | Name reported to the backend | `"opal"` |
+| `opal.otel.resourceAttributes` | Extra resource attributes, e.g. `deployment.environment=production` | `""` |
+| `opal.otel.metricExportInterval` | Metrics export interval in milliseconds (SDK default 60000) | `""` |
+| `opal.otel.headers` | Headers sent with every request; use `existingSecret` for a token | `""` |
+| `opal.otel.existingSecret` | Existing secret holding the headers (not defaulted from `global.existingSecret`) | `""` |
+| `opal.otel.existingSecretKeys.headers` | Secret key for the headers | `OTEL_EXPORTER_OTLP_HEADERS` |
+| `opal.otel.tls.existingSecret` | Existing secret with the collector's TLS material, mounted as files | `""` |
+| `opal.otel.tls.existingSecretKeys.ca` | Secret key of the trusted CA certificate | `ca.crt` |
+| `opal.otel.tls.existingSecretKeys.clientCertificate` | Secret key of the client certificate, for mTLS | `""` |
+| `opal.otel.tls.existingSecretKeys.clientKey` | Secret key of the client key, for mTLS | `""` |
 
 #### Opal Pod Resources
 
@@ -303,6 +357,61 @@ postgres:
     existingSecret: postgres-credentials
 ```
 
+### Standalone Opal (No Database)
+
+Opal 6.0.0 and later need no external database: the configuration lives in an embedded H2 database on the Opal volume, and a project can store its data in an H2 database of its own, on the same volume. Turning the default MongoDB off gives a fully featured single-pod Opal, with the same ServiceAccount, Role and Service:
+
+```yaml
+useMongo: false
+mongo:
+  enabled: false
+```
+
+Data import, views, R and DataSHIELD all work as usual. Since everything is on the volume, `opal.backup` covers the configuration and the data together; size `opal.pvcSize` for the data.
+
+### Opal Configuration on PostgreSQL
+
+Opal 6.0.0 and later keep the configuration (projects, permissions, users, registered databases, DataSHIELD profiles...) in an embedded H2 database under `data/config` on the Opal volume. `usePostgres.config` moves it to a PostgreSQL server, here an internally managed one with its own backup:
+
+```yaml
+usePostgres:
+  config: true
+postgres:
+  config:
+    enabled: true
+    backup:
+      enabled: true
+
+opal:
+  backup:
+    enabled: true
+```
+
+Or an external one, with an existing, empty database and the credentials in a secret:
+
+```yaml
+usePostgres:
+  config: true
+postgres:
+  config:
+    enabled: false
+    host: postgres.example.com
+    port: "5432"
+    database: opal_config
+    # kubectl create secret generic postgres-config-credentials \
+    #   --from-literal=POSTGRESCONFIG_DATABASE=opal_config \
+    #   --from-literal=POSTGRESCONFIG_USER=opal \
+    #   --from-literal=POSTGRESCONFIG_PASSWORD=...
+    existingSecret: postgres-config-credentials
+```
+
+The Opal image writes the connection to `conf/opal-config.properties` at every start and waits for the port to answer before starting Opal, so an internal server coming up at the same time is fine. Two things to know:
+
+- **Decide before the first start.** Opal writes its configuration to whatever database is configured at that moment. Turning `usePostgres.config` on for a release that already has a configuration on its volume gives an Opal with an empty configuration: no administrator password set, no databases registered, no projects. The first-run markers on the volume are not reset, so the first-run setup does not run again either.
+- **Back it up together with the Opal volume.** On PostgreSQL the configuration is in the server, while the secret key that salts its user passwords and encrypts its stored credentials is still in `data/opal-config.xml` on the volume: a restore needs `postgres.config.backup` and `opal.backup` from the same moment.
+
+The data and IDs databases (`useMongo`, `usePostgres.data`, `usePostgres.ids`) are unchanged: they hold the data and the identifiers, and are registered in the configuration through Opal's REST API on the first run.
+
 ### Enabling Backups
 
 ```yaml
@@ -325,6 +434,51 @@ opal:
     schedule: "0 4 * * *"  # Daily at 4 AM
     pvcSize: 2Gi
 ```
+
+### Exporting to OpenTelemetry
+
+The DataSHIELD stream carries the submitted R expressions, the usernames and the client addresses: it is the security audit trail, and unlike `datashield.log` it leaves the pod. Point it at a collector inside your trust boundary, over `https://`, with the token in a secret:
+
+```yaml
+opal:
+  otel:
+    enabled: true
+    endpoint: "https://collector.example.org:4318"
+    resourceAttributes: "deployment.environment=production,service.namespace=my-node"
+    # kubectl create secret generic otel-credentials \
+    #   --from-literal=OTEL_EXPORTER_OTLP_HEADERS='Authorization=Bearer%20...'
+    existingSecret: otel-credentials
+    # kubectl create secret generic otel-tls --from-file=ca.crt=ca.pem
+    tls:
+      existingSecret: otel-tls
+```
+
+A plaintext `http://` endpoint is only defensible on localhost, i.e. against a collector sidecar in the Opal pod. Any `OTEL_` variable the chart does not model goes through `opal.extraEnv`:
+
+```yaml
+opal:
+  extraEnv:
+    - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+      value: "https://tempo.example.org:4318/v1/traces"
+```
+
+What arrives at the collector: the audit records on scope `datashield.user` with the `ds_*` fields under their OpenTelemetry names (`datashield.session.id`, `datashield.action`, `datashield.script`, `enduser.id`, `client.address`); one trace per DataSHIELD session, rooted on a `datashield.session` span with the operations underneath it and a refused script as a `datashield.parse` span in status `ERROR`; and the `datashield.operation.count`, `datashield.operation.duration`, `datashield.session.active` and `datashield.quota.rejection` metrics. Opal prints `OpenTelemetry export enabled.` at startup when it picks the endpoint up.
+
+**Upgrading a release from a 5.x chart.** Opal seeds `conf/` into the PVC on the first run only, so a volume created by Opal 5 keeps a `logback.xml` with no OpenTelemetry appenders in it: enable the export on such a release and it sends its traces and metrics and not one log record. Opal says so at startup:
+
+```
+OpenTelemetry export enabled.
+WARNING: conf/logback.xml declares no OpenTelemetry appender, so no log record will be exported ...
+```
+
+If you never edited that file, replace it with the image's copy:
+
+```
+kubectl exec opal-0 -- cp /usr/share/opal/conf/logback.xml /srv/conf/logback.xml
+kubectl rollout restart statefulset/opal
+```
+
+Otherwise merge the `otel`, `otelrest`, `otelraw` and `otelds` appenders, and the `appender-ref` entries that use them, from the image's file into yours.
 
 ### Custom Storage Classes
 
