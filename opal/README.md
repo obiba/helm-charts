@@ -177,7 +177,7 @@ See [UPGRADE.md](UPGRADE.md) before upgrading an existing release. In particular
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `opal.image` | Opal container image | `obiba/opal:6.0` |
+| `opal.image` | Opal container image | `obiba/opal:6.1` |
 | `opal.imagePullPolicy` | Image pull policy | `Always` |
 | `opal.pvcSize` | Storage size for Opal PVC | `1Gi` |
 | `opal.javaOpts` | Java options for Opal | `"-Xms1G -Xmx2G -XX:+UseG1GC"` |
