@@ -2,7 +2,7 @@
 
 ## Opal with managed R server
 
-Opal deployment, with Rock spawner capability (on-demand R server management). Databases can be included in deployment (default is MongoDB). Databases and Opal backup cron jobs can be enabled.
+Opal deployment, with Rock spawner capability (on-demand R server management) or a list of Rock servers deployed separately. Databases can be included in deployment (default is MongoDB). Databases and Opal backup cron jobs can be enabled.
 
 ## Databases
 
@@ -40,7 +40,9 @@ See [UPGRADE.md](UPGRADE.md) before upgrading an existing release. In particular
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
+| `serviceAccount.create` | Create the service account and set it on the Opal pod. `false` leaves the pod on the namespace's default account | `true` |
 | `serviceAccount.name` | Service account name for Rock spawner | `rock-spawner-service-account` |
+| `rbac.create` | Create the Role and RoleBinding that let the service account create Rock pods. `false` renders neither, for an Opal that uses `opal.rock.hosts` | `true` |
 
 ### MongoDB Configuration
 
@@ -234,10 +236,11 @@ Opal 6.0.0 and later export the logs, the DataSHIELD session traces and the Data
 
 #### Rock (R Server) Pods Configuration
 
-This section declares the default Rock server pods specifications.
+This section declares the Rock servers Opal uses: either a list of servers deployed separately (`opal.rock.hosts`), or the specifications of the pods Opal spawns on demand. When `opal.rock.hosts` is set, the spawner specifications are not rendered. See [Opal with external Rock servers](#opal-with-external-rock-servers).
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
+| `opal.rock.hosts` | Comma-separated list of Rock servers (`host:port`) that Opal uses as they are, instead of spawning pods | `""` |
 | `opal.rock.imagesAllowed` | Comma-separated list of allowed Rock images. Empty value means that any images can be declared in the pod specifications.  | `""` |
 | `opal.rock.specs[0].id` | Rock server profile identifier | `default` |
 | `opal.rock.specs[0].type` | Rock server type | `rock` |
@@ -368,6 +371,22 @@ mongo:
 ```
 
 Data import, views, R and DataSHIELD all work as usual. Since everything is on the volume, `opal.backup` covers the configuration and the data together; size `opal.pvcSize` for the data.
+
+### Opal with External Rock Servers
+
+Opal can use Rock servers that are deployed separately, a Rock Deployment in the same namespace for instance, instead of spawning pods. `opal.rock.hosts` lists them and replaces the spawner specifications; the service account and its Role are then not needed, so they can be turned off as well, and the Opal pod runs on the namespace's default service account:
+
+```yaml
+opal:
+  rock:
+    hosts: rock:8085
+serviceAccount:
+  create: false
+rbac:
+  create: false
+```
+
+Opal registers each server at start and dispatches R sessions to them; one Rock per DataSHIELD profile is declared by the cluster name the Rock is configured with. The Rock servers are yours to deploy, secure and update.
 
 ### Opal Configuration on PostgreSQL
 
