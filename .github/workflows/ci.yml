@@ -69,6 +69,9 @@ jobs:
         
         # Test with Ingress enabled
         helm template opal opal/ --set ingress.enabled=true --debug
+
+        # Test with external Rock servers and no spawner RBAC
+        helm template opal opal/ --set opal.rock.hosts=rock:8085 --set serviceAccount.create=false --set rbac.create=false --debug
         
         echo "All template tests passed"
 

@@ -11,7 +11,13 @@ global:
 # Service account for the Rock spawner
 # This is gives the permission to the Opal server to spawn new Rock containers
 serviceAccount:
+  # Create the service account and set it on the Opal pod; false leaves the pod on the namespace's default account
+  create: true
   name: rock-spawner-service-account
+
+# Role and RoleBinding that let the service account create Rock pods; false renders neither, for an Opal that spawns nothing
+rbac:
+  create: true
 
 # MongoDB setup: apply MongoDB configuration to Opal
 useMongo: true
@@ -289,6 +295,9 @@ opal:
   # Tolerations for scheduling
   tolerations: []
   rock:
+    # Comma separated list of Rock servers (host:port) that Opal uses instead of spawning pods, e.g. a Rock
+    # Deployment next to Opal. When set, the spawner specifications below are not rendered.
+    hosts: ""
     # Comma separated list of allowed Rock images
     imagesAllowed: ""
     # Default Rock container pods specifications

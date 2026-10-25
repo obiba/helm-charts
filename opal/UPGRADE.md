@@ -1,5 +1,9 @@
 # Opal Helm Chart Upgrade Notes
 
+## 2.1.0
+
+Chart 2.1.0 adds the option of Rock servers deployed separately (`opal.rock.hosts`) and makes the spawner's ServiceAccount, Role and RoleBinding optional (`serviceAccount.create`, `rbac.create`). All three default to the previous behaviour: an existing release upgrades with no change to its values and renders the same resources. Use `opal.rock.hosts` with `rbac.create: false` for an Opal that must not create pods; see [Opal with external Rock servers](README.md#opal-with-external-rock-servers).
+
 ## 2.0.0
 
 Chart 2.0.0 moves the Opal image from 5.7.6 to 6.0. Opal 6.0 changes where it keeps its own configuration (projects, users, permissions, registered databases, DataSHIELD profiles...): it leaves OrientDB for an embedded H2 database, or a PostgreSQL server. The migration runs by itself the first time the upgraded Opal starts. What follows is what you have to decide or check around it; the full account is in the [Opal upgrade notes](https://github.com/obiba/opal/blob/master/UPGRADE.md).
